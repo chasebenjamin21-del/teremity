@@ -180,7 +180,7 @@ function Settings({ state, onClose }) {
         <button type="button" class="btn" disabled={!text.trim()} onClick={() => { try { importState(text); setMsg('Restored.') } catch { setMsg("That doesn't look like a Teremity backup.") } }}>Restore backup</button>
         {msg && <p class="note" role="status">{msg}</p>}
         <h3>About</h3>
-        <p class="muted small">Made for Chase and Truc's Elden Ring run. Map coordinates come from the open GraceMap project (GPL-3.0); the map drawing and all the writing are our own. Facts were checked against the community wiki, and the guide links out for anything deeper.</p>
+        <p class="muted small">Made for Chase and Truc's Elden Ring run. The surface map is stitched from Chase's own Switch captures of the game's map. Pin coordinates come from the open GraceMap project (GPL-3.0). The underground drawing and all the writing are our own. Facts were checked against the community wiki, and the guide links out for anything deeper.</p>
       </div>
     </div>
   )

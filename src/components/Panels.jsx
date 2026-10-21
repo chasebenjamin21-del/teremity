@@ -264,7 +264,7 @@ export function HereTab({ state, here, onWhere, onFly }) {
       <h3>While you're here</h3>
       <ul class="plain">
         <li><T>Any underlined word explains itself when you tap it. Try Golden Seed or Poise.</T></li>
-        <li>The map pins are your own markers (green), bosses (red), loot (teal) and Sites of Grace (gold).</li>
+        <li>On the map, the gold circles are the game's own Sites of Grace. Green discs are your markers, red diamonds are bosses and teal gems are loot. Tap any of them for details.</li>
         <li>Progress is saved on this iPad, so tick things off as you go.</li>
       </ul>
     </div>
