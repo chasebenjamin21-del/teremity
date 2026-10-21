@@ -3,7 +3,7 @@ import { useStore, setState, exportState, importState, resetState } from './lib/
 import { resolveHere, byId, regionName } from './lib/world.js'
 import { MapView } from './components/MapView.jsx'
 import { WhereSheet } from './components/WhereSheet.jsx'
-import { HereTab, PlanTab, BossesTab, LootTab, BuildTab, LearnTab, Detail } from './components/Panels.jsx'
+import { HereTab, PlanTab, BossesTab, LootTab, BuildTab, LearnTab, Detail, setViewer } from './components/Panels.jsx'
 import { useOpenTerm, T, askClaude } from './components/Text.jsx'
 import { Icon } from './components/ui.jsx'
 
@@ -19,6 +19,8 @@ export function App() {
   const [selected, setSelected] = useState(null)
   const fly = useRef(null)
   const [term, closeTerm] = useOpenTerm()
+  const [viewer, setV] = useState(null)
+  useEffect(() => { setViewer(setV) }, [])
 
   useEffect(() => {
     const root = document.documentElement
@@ -108,6 +110,12 @@ export function App() {
         </div>
       )}
       {settings && <Settings state={state} onClose={() => setSettings(false)} />}
+      {viewer && (
+        <div class="viewer" role="dialog" aria-modal="true" aria-label={viewer.cap} onClick={() => setV(null)}>
+          <img src={viewer.src} alt={viewer.cap} />
+          <p>{viewer.cap} · tap anywhere to close</p>
+        </div>
+      )}
     </div>
   )
 }

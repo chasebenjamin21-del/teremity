@@ -1,7 +1,7 @@
 // Plan, build, secrets and tips: the hand-written guide content.
 
 export const TEREMITY = {
-  level: 103, runes: 35211, nextLevelCost: 65601,
+  level: 103, runes: 35211, nextLevelCost: 65681,
   stats: { Vigor: 35, Mind: 25, Endurance: 20, Strength: 30, Dexterity: 25, Intelligence: 25, Faith: 27, Arcane: 15 },
   hp: 1288, fp: 147, stamina: 113, equipLoad: '42.2 of 64.1 (medium)', flask: '8 charges (5 red, 3 blue), +4', seeds: 2,
   gear: [
@@ -21,9 +21,9 @@ export const BUILD_ADVICE = [
   { h: 'Then Faith', p: 'Faith powers both the Godslayer\'s fire and every incantation from the Clawmark Seal. Take it from 27 to 40.' },
   { h: 'Keep Dexterity', p: 'The Godslayer\'s Greatsword needs 22 Dexterity and gets most of its physical damage from it, so Dex 25 is doing real work.' },
   { h: 'Respec is optional', p: 'Intelligence 25 only matters if you two keep using the staff and sorceries. If you drop sorcery, one Larval Tear at Rennala moves those points into Vigor and Faith. If you still like casting, keep it.' },
-  { h: 'Upgrade the Godslayer', p: 'It is at +5. The next step needs a Somber Smithing Stone [6], and the first ones are up on the Altus Plateau, in Old Altus Tunnel and Volcano Manor. That is a strong reason to ride the Grand Lift.' },
+  { h: 'Upgrade the Godslayer', p: 'It is at +5. The next step needs a Somber Smithing Stone [6]. The closest one is in Caelid: the Fallingstar Beast boss in Sellia Crystal Tunnel drops one, plus a Somberstone Miner\'s Bell Bearing. More are up on the Altus Plateau and in Nokron.' },
   { h: 'Use the Great Rune', p: "Equip Godrick's Great Rune at a grace and pop a Rune Arc before a tough boss: +5 to every stat until you die." },
-  { h: 'Leveling', p: 'Level 104 costs about 65,600 runes, and you hold 35,211. Killing Elder Dragon Greyoll in Dragonbarrow (about 50,000 runes) gets you there in one go.' },
+  { h: 'Leveling', p: 'Level 104 costs 65,681 runes, and you hold 35,211. Killing Elder Dragon Greyoll in Dragonbarrow (about 50,000 runes) gets you there in one go.' },
 ]
 
 export const TALISMAN_SETS = [
@@ -38,7 +38,7 @@ export const PREP = [
   { id: 'prep-tali', t: 'Pick a talisman set', d: 'See the two sets on the Teremity tab: one for bosses, one for exploring.' },
   { id: 'prep-spells', t: 'Check the spell slots', d: 'At a grace, choose Memorize Spell. Keep Dragonfire plus a heal and a buff if you have them.' },
   { id: 'prep-quick', t: 'Load the quick items', d: 'Put the flasks, Physick, Rune Arcs and Preserving Boluses (for Caelid rot) on the D-pad.' },
-  { id: 'prep-bell', t: 'Upgrade spirit ashes', d: 'If you have Glovewort, Roderika at the Roundtable can upgrade your favorite spirit.' },
+  { id: 'prep-bell', t: 'Upgrade spirit ashes', d: 'If Roderika is at the Roundtable and Hewg the smith has spoken with her, she upgrades spirits with Glovewort. If she is not there yet, skip this.' },
   { id: 'prep-sort', t: 'Sell what you will never use', d: 'Golden Runes in your pouch turn into runes when used. Use them now to get closer to level 104.' },
 ]
 
@@ -49,36 +49,36 @@ export const ROUTES = [
     why: 'Exploring and loot, just what Truc loves. Three new areas open, two Larval Tears are on the way, and the boss is fair at your level.',
     time: '2 to 3 hours',
     steps: [
-      { id: 'r1', t: 'Ride to the Road to the Manor grace', where: 'Road to the Manor', d: 'North-west Liurnia, past the Four Belfries cliffs.' },
+      { id: 'r1', t: 'Ride to the Road to the Manor grace', where: 'Road to the Manor', d: 'North Liurnia, on the road up to the manor.' },
       { id: 'r2', t: 'Explore Caria Manor', where: 'Main Caria Manor Gate', d: 'Lots of loot in the gardens and halls. The big ghostly hands crawl fast; kill them from range.' },
-      { id: 'r3', t: 'Beat Royal Knight Loretta', where: 'Royal Moongazing Grounds', d: 'Your skull marker. Boss card on the Bosses tab.' },
+      { id: 'r3', t: 'Beat Royal Knight Loretta', where: 'Manor Upper Level', d: 'Your skull marker, at the top of the manor. Boss card on the Bosses tab. She is weak to lightning and immune to bleed.' },
       { id: 'r4', t: 'Collect the Resurrection painting reward', where: 'Behind Caria Manor', d: 'You already have the painting. Head to the graveyard south-east of the Behind Caria Manor grace: a Larval Tear and a scholar outfit.' },
-      { id: 'r5', t: 'Visit the Three Sisters and Ranni\'s Rise', where: "Ranni's Rise", d: 'The towers behind the manor. Pidia, a servant on a balcony below the manor, sells one Larval Tear for 3,000 runes.' },
+      { id: 'r5', t: "Visit the Three Sisters and Ranni's Rise", where: "Ranni's Rise", d: "The towers behind the manor. Pidia, a servant on the upper balcony of the manor's chapel, sells one Larval Tear for 3,000 runes. You reach him by dropping down the cliffs from the Three Sisters." },
       { id: 'r6', t: 'Optional: Village of the Albinaurics', where: 'Village of the Albinaurics', d: 'Omenkiller boss, a Larval Tear in the graveyard, and the hiding pot.' },
     ],
   },
   {
-    id: 'radahn', title: 'The Radahn Festival',
-    why: 'The biggest spectacle fight in the game, with lots of NPC helpers. Beating him opens Nokron and the Mimic Tear.',
-    time: '1 to 2 hours',
+    id: 'altus', title: 'Up to the Altus Plateau',
+    why: 'The main road onward: golden new scenery, Godfrey Icon nearby, and riding the lift is what starts the Radahn Festival.',
+    time: '2 hours or more',
     steps: [
-      { id: 'd1', t: 'Optional warm-up: Gael Tunnel', where: 'Gael Tunnel', d: 'Your loot marker. The Moonveil katana and a Magma Wyrm.' },
-      { id: 'd2', t: 'Optional: Sellia, Town of Sorcery', where: 'Sellia Under-Stair', d: 'Light the three braziers around town to drop the barrier, then loot it. A Sacred Tear is nearby at the Church of the Plague.' },
-      { id: 'd3', t: 'Go to Redmane Castle', where: 'Redmane Castle Plaza', d: 'Your house marker, in the far south-east of Caelid. The festival is running, so the gate is open.' },
-      { id: 'd4', t: 'Talk to Jerren in the plaza', where: 'Redmane Castle Plaza', d: 'He starts the festival. Rest at the plaza grace, then step into the waygate.' },
-      { id: 'd5', t: 'Fight Starscourge Radahn', where: 'Starscourge Radahn', d: 'Use every summon sign on the field. Boss card on the Bosses tab.' },
-      { id: 'd6', t: 'Watch the star fall', where: 'Starscourge Radahn', d: 'After he falls, a star crashes into Limgrave and opens Nokron, Eternal City. That is a new area for next time.' },
+      { id: 'a1', t: 'Ride the Grand Lift of Dectus', where: 'Grand Lift of Dectus', d: 'Your house marker. Both medallion halves are in your key items, so the lift just works. This also starts the Radahn Festival back in Caelid.' },
+      { id: 'a2', t: 'Touch the first Altus graces', where: 'Altus Plateau', d: 'The lift lands you near the Altus Plateau grace, and Erdtree-Gazing Hill is close. The Erdtree is huge from here.' },
+      { id: 'a3', t: 'Golden Lineage Evergaol', where: 'Golden Lineage Evergaol', d: 'A stone circle near the lift. Godefroy the Grafted inside drops the Godfrey Icon talisman.' },
+      { id: 'a4', t: 'Old Altus Tunnel for Somber stones', where: 'Old Altus Tunnel', d: "One or two Somber Smithing Stone [6] for the Godslayer's Greatsword, depending on the source." },
     ],
   },
   {
-    id: 'altus', title: 'Up to the Altus Plateau',
-    why: 'The main road onward. New golden scenery, the stones to upgrade the Godslayer, and Godfrey Icon nearby.',
-    time: '2 hours or more',
+    id: 'radahn', title: 'The Radahn Festival',
+    why: 'The biggest spectacle fight in the game, with lots of NPC helpers. It only starts after you ride the Grand Lift or touch an Altus grace, so do the Altus route first.',
+    time: '1 to 2 hours',
     steps: [
-      { id: 'a1', t: 'Ride the Grand Lift of Dectus', where: 'Grand Lift of Dectus', d: 'Your house marker. Both medallion halves are in your key items, so the lift just works.' },
-      { id: 'a2', t: 'Touch the first Altus graces', where: 'Altus Plateau', d: 'The lift lands you near the Altus Plateau grace, and Erdtree-Gazing Hill is close. The Erdtree is huge from here.' },
-      { id: 'a3', t: 'Golden Lineage Evergaol', where: 'Golden Lineage Evergaol', d: 'A stone circle near the lift. Godefroy the Grafted inside drops the Godfrey Icon talisman.' },
-      { id: 'a4', t: 'Old Altus Tunnel for Somber stones', where: 'Old Altus Tunnel', d: 'Two Somber Smithing Stone [6] for the Godslayer\'s Greatsword.' },
+      { id: 'd1', t: 'Optional warm-up: Gael Tunnel', where: 'Gael Tunnel', d: 'Your loot marker. The Moonveil katana and a Magma Wyrm.' },
+      { id: 'd2', t: 'Optional: Sellia Crystal Tunnel', where: 'Sellia Crystal Tunnel', d: "Your loot marker. The Fallingstar Beast here drops a Somber Smithing Stone [6] for the Godslayer, plus a Somberstone Miner's Bell Bearing." },
+      { id: 'd3', t: 'Get into Redmane Castle', where: 'Impassable Greatbridge', d: 'Your house marker. The main gate stays shut during the festival. Use the waygate from the Impassable Greatbridge grace, or the one on the Fort Gael watchtower.' },
+      { id: 'd4', t: 'Talk to Jerren in the plaza', where: 'Chamber Outside the Plaza', d: 'He starts the fight. Then go up the stairs opposite him, through the chapel and down the lift. The waygate is at the bottom, next to a Stake of Marika.' },
+      { id: 'd5', t: 'Fight Starscourge Radahn', where: 'Starscourge Radahn', d: 'Use every summon sign on the field. Boss card on the Bosses tab.' },
+      { id: 'd6', t: 'Watch the star fall', where: 'Starscourge Radahn', d: 'After he falls, a star crashes into Limgrave and opens Nokron, Eternal City, a new area for next time.' },
     ],
   },
 ]
@@ -95,7 +95,7 @@ export const SECRETS = {
   weeping: [
     'Kill three little spirit turtles around Oridys\'s Rise to open the tower and get a Memory Stone.',
     'A Walking Mausoleum roams the west side. Hit the glowing growths on its legs to make it sit.',
-    'Grave Glovewort for spirit upgrades grows in Tombsward Catacombs and Earthbore Cave.',
+    'Grave Glovewort for spirit upgrades grows in Tombsward Catacombs.',
     'The Claymore, a fan favorite, sits in a chest inside Castle Morne.',
   ],
   liurnia: [
@@ -110,12 +110,12 @@ export const SECRETS = {
     "Sellia's barrier opens when you light the three braziers around the town.",
     'The Church of the Plague, near Sellia, has a Sacred Tear.',
     'The Moonveil katana is in Gael Tunnel, in western Caelid.',
-    'Preserving Boluses cure scarlet rot. Craft them or buy them before going into the swamp.',
+    'Preserving Boluses cure scarlet rot. They come from an Armorer\'s Cookbook, so check your crafting menu before the swamp.',
   ],
   altus: [
     'Godefroy the Grafted, in an evergaol, drops the Godfrey Icon: stronger charged spells and skills.',
     'Windmill Village looks peaceful. It is not.',
-    'Old Altus Tunnel has two Somber Smithing Stone [6] for the Godslayer.',
+    'Old Altus Tunnel has one or two Somber Smithing Stone [6] for the Godslayer.',
   ],
   siofra: [
     'Nokron, Eternal City only opens after Radahn falls.',
@@ -141,7 +141,7 @@ export const VIDEO_TIPS = [
 ]
 
 export const GRIND = [
-  { id: 'g1', n: 'Elder Dragon Greyoll', where: 'Dragonbarrow West', runes: 'About 50,000, once', how: 'Ride north from Dragonbarrow West. She barely fights back, so just keep hitting her head. Bleed weapons like the Occult Hookclaws make it quicker.' },
+  { id: 'g1', n: 'Elder Dragon Greyoll', where: 'Fort Faroth', runes: 'About 50,000, once', how: 'She lies right beside Fort Faroth in Dragonbarrow; ride east from Dragonbarrow West. She barely fights back, so keep hitting her head. She resists bleed, so use your strongest weapon and wear the Gold Scarab.' },
   { id: 'g2', n: 'Night bosses', where: 'Any grace', runes: 'Several thousand each, once', how: 'Pass Time to night at a grace, then hunt the Night\'s Cavalry riders and Bell Bearing Hunters you have not beaten.' },
   { id: 'g3', n: 'Gold Scarab on', where: 'Anywhere', runes: '+20% from every kill', how: 'Wear the Gold Scarab talisman while exploring, and swap it out before bosses.' },
   { id: 'g4', n: 'Golden Runes in the pouch', where: 'Your inventory', runes: 'Whatever you are holding', how: 'Golden Runes are consumables that turn into runes. Use them before leveling.' },

@@ -13,7 +13,7 @@
   "y": 193.85,
   "symbol": "house",
   "title": "Coastal Cave",
-  "note": "Two Demi-Human Chiefs at the end, and Boc the Seamster is trapped near the entrance."
+  "note": "Two Demi-Human Chiefs at the end. If you met Boc, the talking bush, he waits here for his stolen belongings."
  },
  {
   "id": "m3",
@@ -109,7 +109,7 @@
   "y": 172.62,
   "symbol": "diamond",
   "title": "Sellia Crystal Tunnel",
-  "note": "A Somberstone Miner's Bell Bearing [1] and the Faithful's Canvas Talisman."
+  "note": "The Fallingstar Beast boss here drops a Somber Smithing Stone [6] for the Godslayer and a Somberstone Miner's Bell Bearing. The Faithful's Canvas Talisman is here too."
  },
  {
   "id": "m15",
@@ -165,7 +165,7 @@
   "y": 214.09,
   "symbol": "skull",
   "title": "Miranda the Blighted Bloom",
-  "note": "A giant flower boss in Tombsward Cave. Drops a cookbook and an amber medallion."
+  "note": "A giant flower boss in Tombsward Cave. Drops the Viridian Amber Medallion; a cookbook is elsewhere in the cave."
  },
  {
   "id": "m22",

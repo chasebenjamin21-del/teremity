@@ -11,13 +11,13 @@ import { Check, Dir, Icon } from './ui.jsx'
 import { MarkerGlyph } from './MapView.jsx'
 
 export const LOOT_CATS = [
-  ['seed', 'Golden Seeds', 'One more flask charge each. The next upgrade needs 3, and you hold 2.'],
+  ['seed', 'Golden Seeds', 'Each flask upgrade adds a charge, and the seed cost rises as you go. The next one needs 3, and you hold 2.'],
   ['tear', 'Sacred Tears', 'Every flask charge heals more.'],
   ['larval', 'Larval Tears', 'Each one lets Rennala reset your stats once.'],
   ['memory', 'Memory Stones', 'One more spell slot.'],
   ['pouch', 'Talisman Pouches', 'One more talisman slot.'],
   ['somber', 'Somber Smithing Stones', "Upgrades for the Godslayer's Greatsword. It needs [6] next."],
-  ['bell', 'Bell Bearings', 'Give them to the Twin Maiden Husks to buy stones and Glovewort forever.'],
+  ['bell', 'Bell Bearings', 'Give them to the Twin Maiden Husks to unlock new items in their shop, like smithing stones.'],
   ['crystal', 'Crystal Tears', 'New effects for the Physick flask.'],
   ['deathroot', 'Deathroot', 'Trade to Gurranq in the Bestial Sanctum for rewards.'],
   ['pick', 'Build picks', 'Gear that suits Teremity.'],
@@ -33,7 +33,7 @@ const PICK_NOTES = {
   "Godslayer's Seal": 'Boosts Godskin black flame incantations.',
   'Erdtree Seal': 'The best seal for high Faith.',
   Moonveil: 'A famous katana with a magic slash skill.',
-  'Blasphemous Blade': 'A fire greatsword that heals you as it hits.',
+  'Blasphemous Blade': 'A fire greatsword that heals you when enemies die near you; its skill heals as it hits.',
   "Erdtree's Favor": 'More health, stamina and equip load.',
   'Green Turtle Talisman': 'Faster stamina recovery.',
   'Dragoncrest Shield Talisman': 'Less physical damage taken.',
@@ -49,10 +49,25 @@ const PICK_NOTES = {
   'Fire Scorpion Charm': 'More fire damage.',
   "Flock's Canvas Talisman": 'Stronger incantations.',
   "Faithful's Canvas Talisman": 'Stronger incantations.',
-  'Incantation Scarab': 'Stronger incantations; a head piece.',
+  'Incantation Scarab': 'A head piece: incantations cost a little less FP, but you take a bit more damage.',
   "Bloodhound's Fang": 'A bleed curved greatsword.',
 }
 const catOf = l => (l.c.startsWith('pick') ? 'pick' : l.c)
+const clean = n => n.replace(/\s*\(.*?\)\s*/g, ' ').replace(/ - .*$/, '').replace(/\s+/g, ' ').trim()
+const wikiUrl = n => 'https://eldenring.wiki.fextralife.com/' + encodeURIComponent(n).replace(/%20/g, '+').replace(/%27/g, "'")
+const picsUrl = n => 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent('Elden Ring ' + n)
+const watchUrl = n => 'https://www.youtube.com/results?search_query=' + encodeURIComponent('Elden Ring ' + n + ' boss fight guide')
+function SeeIt({ e, k }) {
+  const n = clean(e.n)
+  const wiki = k === 'grace' ? (REGIONS[e.r]?.name || n) : k === 'marker' ? n : n
+  return (
+    <div class="see">
+      <a class="btn" href={picsUrl(k === 'grace' ? n + ' site of grace' : n)} target="_blank" rel="noopener">See pictures</a>
+      <a class="btn" href={wikiUrl(wiki)} target="_blank" rel="noopener">Wiki page</a>
+      {k === 'boss' && <a class="btn" href={watchUrl(n)} target="_blank" rel="noopener">Watch a fight</a>}
+    </div>
+  )
+}
 export const lootNote = l => (catOf(l) === 'pick' ? PICK_NOTES[l.n] || 'Suits Teremity.' : LOOT_CATS.find(c => c[0] === l.c)?.[2])
 const SYM = { skull: 'skull (someone to kill)', flag: 'flag (important place)', turtle: 'turtle (mausoleum)', diamond: 'diamond (loot)', house: 'house (building)' }
 
@@ -100,6 +115,7 @@ export function Detail({ id, state, here, onClose, onFly }) {
         <p class="muted">We matched this marker from your Switch map video, so it's our best reading of what you marked.</p>
       </>}
       {k === 'place' && <p class="muted">{(e.t || '').replace(/_/g, ' ')}</p>}
+      <SeeIt e={e} k={k} />
       <div class="row-actions">
         <button type="button" class="btn" onClick={() => askClaude(`Tell us about ${e.n} and what we should know before going there.`, { where: here?.n })}><Icon name="chat" /> Ask Claude about this</button>
       </div>
@@ -147,6 +163,38 @@ function NearbyLists({ p, state, onFly, compact }) {
   )
 }
 
+// One-tap questions about things right where you are, so ticking things off takes no digging.
+function QuickCheck({ here, state, onFly }) {
+  if (!here || here.noMap || here.approx) return null
+  const snooze = state.snooze || {}
+  const bs = nearest(bosses, here, { max: 5, limit: 2, filter: b => !isDone(state, b) && !snooze[b.id] })
+  const ls = nearest(loot, here, { max: 4, limit: 3, filter: l => !isGot(state, l) && !snooze[l.id] })
+  const steps = []
+  for (const r of ROUTES) for (const st of r.steps) {
+    if (state.steps[st.id] || snooze[st.id]) continue
+    const e = findByName(st.where)
+    if (e && (e.l || 0) === (here.l || 0) && dist(e, here) < 3) steps.push(st)
+  }
+  const qs = [
+    ...steps.slice(0, 1).map(st => ({ id: st.id, q: `Plan step: ${st.t}. Done?`, yes: () => toggle('steps', st.id) })),
+    ...bs.map(({ e }) => ({ id: e.id, q: `Did you beat ${e.n}?`, yes: () => toggle('done', e.id, e.d), e })),
+    ...ls.map(({ e }) => ({ id: e.id, q: `Picked up the ${e.n}${e.w ? ` (${e.w})` : ''}?`, yes: () => toggle('got', e.id), e })),
+  ]
+  if (!qs.length) return null
+  const later = id => setState(s => ({ snooze: { ...(s.snooze || {}), [id]: 1 } }))
+  return (
+    <section class="quick">
+      <h3>Quick check, right here</h3>
+      <ul>{qs.map(q => (
+        <li>
+          <button type="button" class="qtext" onClick={() => q.e && onFly(q.e.id)}>{q.q}</button>
+          <span class="qbtns"><button type="button" class="btn small primary" onClick={q.yes}>Yes</button><button type="button" class="btn small" onClick={() => later(q.id)}>Not yet</button></span>
+        </li>
+      ))}</ul>
+    </section>
+  )
+}
+
 // ---------- Here ----------
 export function HereTab({ state, here, onWhere, onFly }) {
   if (!here) return (
@@ -167,6 +215,7 @@ export function HereTab({ state, here, onWhere, onFly }) {
     <div class="tab-body">
       <p class="kicker">You are at</p>
       <h2 class="display">Roundtable Hold</h2>
+      <button type="button" class="cap wide" onClick={() => openViewer(CAPTURES[4].src, CAPTURES[4].cap)}><img src={CAPTURES[4].src} alt="Roundtable Hold, from your Switch" /></button>
       <p class="lead">{R.blurb}</p>
       <ul class="plain">
         <li><b>Hewg the smith</b> upgrades weapons, including Somber upgrades for the Godslayer.</li>
@@ -193,6 +242,7 @@ export function HereTab({ state, here, onWhere, onFly }) {
           <p class="muted small">The compass bar at the top of the screen shows N, E, S and W.</p>
         </section>
       )}
+      <QuickCheck here={here} state={state} onFly={onFly} />
       {secret && <aside class="secret"><h3>Something to tell Chase</h3><p><T>{secret}</T></p></aside>}
       <NearbyLists p={here} state={state} onFly={onFly} />
       <div class="row-actions">
@@ -336,9 +386,23 @@ export function BuildTab() {
       <section><h3>Where to put the next levels</h3><ul class="advice">{BUILD_ADVICE.map(a => <li><b>{a.h}</b><p><T>{a.p}</T></p></li>)}</ul></section>
       <section><h3>Talisman sets from what we own</h3><ul class="cards">{TALISMAN_SETS.map(s => <li class="card"><b>{s.h}</b><p>{s.items.join(' · ')}</p><p class="muted"><T>{s.why}</T></p></li>)}</ul></section>
       <section><h3>Also in the bag</h3><p class="muted">{t.owned.join(' · ')}</p></section>
+      <section><h3>From your Switch, October 20</h3>
+        <div class="captures">{CAPTURES.map(c => <figure><button type="button" class="cap" onClick={() => openViewer(c.src, c.cap)}><img src={c.src} alt={c.cap} loading="lazy" /></button><figcaption>{c.cap}</figcaption></figure>)}</div>
+      </section>
     </div>
   )
 }
+const B = import.meta.env.BASE_URL
+export const CAPTURES = [
+  { src: B + 'captures/status.jpg', cap: "Teremity's status screen" },
+  { src: B + 'captures/godslayer.jpg', cap: "The Godslayer's Greatsword +5" },
+  { src: B + 'captures/map-markers.jpg', cap: 'Your world map and markers' },
+  { src: B + 'captures/map-limgrave-south.jpg', cap: 'South Limgrave, zoomed in' },
+  { src: B + 'captures/roundtable.jpg', cap: 'Roundtable Hold' },
+]
+let viewerSet = null
+export function setViewer(f) { viewerSet = f }
+export function openViewer(src, cap) { viewerSet && viewerSet({ src, cap }) }
 function showTermByName(n) { const g = GLOSSARY.find(x => x.t === n); if (g) showTerm(g) }
 
 // ---------- Learn ----------

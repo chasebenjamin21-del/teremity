@@ -352,3 +352,22 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 @media (max-width: 560px) { .map-credit { display: none; } .map-tools { top: 8px; right: 8px; } }
 
 .here-empty .btn { margin-top: 2px; }
+
+/* ---------- pictures, quick checks ---------- */
+.see { display: flex; flex-wrap: wrap; gap: 8px; }
+.see .btn { text-decoration: none; min-height: 42px; padding: 8px 14px; font-size: 15.5px; }
+.btn.small { min-height: 38px; padding: 6px 14px; font-size: 15px; }
+.quick { background: var(--surface); border: 1px solid var(--gold); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 10px; }
+.quick ul { list-style: none; display: grid; gap: 10px; }
+.quick li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.qtext { all: unset; cursor: pointer; flex: 1 1 220px; font-size: 17px; }
+.qbtns { display: flex; gap: 8px; }
+.captures { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.captures figure { margin: 0; display: grid; gap: 4px; }
+.captures figcaption { font-size: 13.5px; color: var(--muted); }
+.cap { all: unset; cursor: zoom-in; display: block; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.cap img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.cap.wide { width: 100%; }
+.viewer { position: fixed; inset: 0; z-index: 40; background: rgba(5, 6, 9, .92); display: grid; place-items: center; padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px); cursor: zoom-out; }
+.viewer img { max-width: 100%; max-height: calc(100% - 40px); border-radius: 10px; }
+.viewer p { color: #d9d0bd; font-size: 15px; margin-top: 8px; }
