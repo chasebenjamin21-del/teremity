@@ -83,7 +83,7 @@ export function WhereSheet({ onClose, onPicked }) {
 
 function RegionPicker({ r, seen, onPick, onBack }) {
   const list = graces.filter(g => g.r === r).sort((a, b) => (seen(b) ? 1 : 0) - (seen(a) ? 1 : 0) || a.n.localeCompare(b.n))
-  const subs = [...new Set(list.map(g => g.s || ''))]
+  const subs = [...new Set(list.map(g => g.s || ''))].sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b)))
   return (
     <section class="region-pick">
       <button type="button" class="link back" onClick={onBack}><Icon name="back" /> All regions</button>

@@ -110,6 +110,7 @@ ul, ol { margin: 0; padding: 0; }
 .btn .icon { width: 20px; height: 20px; }
 .iconbtn { display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; border: 1px solid transparent; background: none; cursor: pointer; color: var(--text); }
 .iconbtn.float { background: var(--surface); border-color: var(--line); box-shadow: var(--shadow); }
+.icon .knob { fill: var(--bg); }
 .icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .link { background: none; border: 0; padding: 4px 0; color: var(--gold-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 16px; }
 .link .icon { width: 18px; height: 18px; }
@@ -230,7 +231,7 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 .sheet-back { position: fixed; inset: 0; z-index: 20; background: rgba(8, 10, 14, .55); display: grid; justify-items: center; align-items: start; padding: calc(env(safe-area-inset-top, 0px) + 24px) 16px 24px; overflow-y: auto; }
 .sheet { width: min(760px, 100%); background: var(--bg); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 20px 22px 26px; display: grid; gap: 14px; }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; }
-.sheet h2 { font-family: var(--display); font-size: 36px; }
+.sheet h2 { font-family: var(--display); font-size: 38px; color: var(--text); }
 .sheet h3 { font-family: var(--sc); font-size: 15px; letter-spacing: .08em; color: var(--gold-ink); margin-top: 6px; }
 .where-input { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1.5px solid var(--gold); border-radius: 16px; padding: 4px 16px; }
 .where-input .icon { color: var(--gold); width: 26px; height: 26px; }
@@ -286,6 +287,11 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 .tone-meadow.region { fill: var(--t-meadow); } .tone-rain.region { fill: var(--t-rain); } .tone-lake.region { fill: var(--t-lake); }
 .tone-rot.region { fill: var(--t-rot); } .tone-gold.region { fill: var(--t-gold); } .tone-ash.region { fill: var(--t-ash); }
 .tone-snow.region { fill: var(--t-snow); } .tone-storm.region { fill: var(--t-storm); } .tone-deep.region { fill: var(--t-deep); }
+.region-grain { fill: url(#grain); pointer-events: none; }
+.grain-dot { fill: var(--land-line); opacity: .16; }
+.region.st-later, .region.st-not-yet { filter: saturate(.45) brightness(.82); }
+:root[data-theme="light"] .region.st-later, :root[data-theme="light"] .region.st-not-yet { filter: saturate(.5) brightness(1.04); }
+.region.st-next { filter: saturate(.8); }
 .erdtree .trunk path { fill: none; stroke: var(--gold); stroke-width: .9; stroke-linecap: round; }
 .tg0 { stop-color: var(--gold); stop-opacity: .38; } .tg1 { stop-color: var(--gold); stop-opacity: 0; }
 .landmark path { fill: var(--land-line); opacity: .55; }
@@ -297,7 +303,8 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 .pin { cursor: pointer; }
 .pin .hit { fill: transparent; }
 .pin .lbl { font-family: var(--ui); font-size: 11.5px; font-weight: 500; text-anchor: middle; fill: var(--text); paint-order: stroke; stroke: var(--pin-halo); stroke-width: 3.2px; stroke-linejoin: round; opacity: 0; pointer-events: none; transition: opacity .2s; }
-.map-svg[data-zoom="near"] .pin .lbl, .map-svg[data-zoom="mid"] .pin.marker .lbl, .pin.sel .lbl { opacity: 1; }
+.map-svg[data-zoom="near"] .pin .lbl, .map-svg[data-zoom="mid"] .pin.marker .lbl, .map-svg[data-zoom="mid"] .pin.grace.seen .lbl, .pin.sel .lbl { opacity: 1; }
+.map-svg[data-zoom="mid"] .pin.grace.seen .lbl { font-size: 10.5px; fill: var(--gold-ink); }
 .map-svg { --k: 1; }
 .map-svg[data-zoom="far"] { --k: .78; }
 .map-svg[data-zoom="far"] .pin.place, .map-svg[data-zoom="far"] .pin.loot, .map-svg[data-zoom="far"] .pin.grace.unseen, .map-svg[data-zoom="far"] .pin.boss.minor,

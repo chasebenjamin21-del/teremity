@@ -133,6 +133,11 @@ export const VIDEO_TIPS = [
   { from: 'Hawk Live Gaming: 15 tips', tip: 'Hit suspicious walls. Some are illusions hiding treasure.' },
   { from: 'Hawk Live Gaming: 15 tips', tip: "Spirit Ashes are not cheating. Summon them for every boss." },
   { from: 'Hawk Live Gaming: 15 tips', tip: 'Choose carefully which Remembrance to copy at a Walking Mausoleum; there are only a few of them.' },
+  { from: "Rusty: A Beginner's Guide (Patch 1.17)", tip: 'The Determination Ash of War, which Teremity owns, makes your next hit about 60 percent stronger for around 10 seconds. It pairs well with a charged heavy attack on a greatsword.' },
+  { from: "Rusty: A Beginner's Guide (Patch 1.17)", tip: "Night's Cavalry riders only patrol at night. Break their horse's legs with charged two-handed heavy attacks." },
+  { from: "Rusty: A Beginner's Guide (Patch 1.17)", tip: 'Blocking light attacks with a shield and answering with a guard counter can hit as hard as a charged heavy attack.' },
+  { from: "Rusty: A Beginner's Guide (Patch 1.17)", tip: 'Lhutel the Headless, a spirit ash from Tombsward Catacombs, is one of the few summons tough enough to last a whole boss fight.' },
+  { from: "Rusty: A Beginner's Guide (Patch 1.17)", tip: "Radagon's Soreseal adds Strength, which helps you meet a heavy weapon's requirement. Two-handing counts your Strength as 1.5 times higher too." },
 ]
 
 export const GRIND = [

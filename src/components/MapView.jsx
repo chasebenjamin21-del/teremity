@@ -161,11 +161,13 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
             <path d="M0 1.6 q1.5 -1 3 0 t3 0" fill="none" class="wave" />
           </pattern>
           <radialGradient id="treeGlow"><stop offset="0" class="tg0" /><stop offset="1" class="tg1" /></radialGradient>
+          <pattern id="grain" width="2.2" height="2.2" patternUnits="userSpaceOnUse"><circle cx=".55" cy=".55" r=".16" class="grain-dot" /><circle cx="1.65" cy="1.65" r=".12" class="grain-dot" /></pattern>
         </defs>
         <rect x="-50" y="-50" width="400" height="400" class="sea" />
         <rect x="-50" y="-50" width="400" height="400" fill="url(#waves)" class="sea-lines" />
         <path d={world.land[layer ? 'under' : 'surface']} class="land-halo" />
-        {shapes.map(s => <path d={s.d} class={`region r-${s.id} tone-${REGIONS[s.id]?.tone}`} />)}
+        {shapes.map(s => <path d={s.d} class={`region r-${s.id} tone-${REGIONS[s.id]?.tone} st-${(REGIONS[s.id]?.status || '').replace(/ /g, '-')}`} />)}
+        {shapes.map(s => <path d={s.d} class="region-grain" />)}
         {!layer && <ErdtreeGlyph />}
         {!layer && LANDMARKS.filter(l => l.id !== 'erdtree').map(l => (
           <g class="landmark" style={at(l)}><path d="M-5 4 V-3 h2 v2 h2 v-3 h2 v3 h2 v-2 h2 V4 Z" /></g>
