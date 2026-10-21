@@ -22,9 +22,22 @@ export function kindOf(e) {
   return 'grace'
 }
 
-// Resolve the current location (a grace id, or region:<id>) to a point with a region.
+// Resolve the current location to a point with a region. It can be a grace id, 'region:<id>',
+// or 'pt:<x>,<y>,<layer>' for a pin Truc dropped on the map.
+const pinCache = new Map()
 export function resolveHere(here) {
   if (!here) return null
+  if (here.startsWith('pt:')) {
+    if (pinCache.has(here)) return pinCache.get(here)
+    const [x, y, l = 0] = here.slice(3).split(',').map(Number)
+    const p = { x, y, l }
+    const g = nearest(W.graces, p, { max: 80, limit: 1 })[0]?.e
+    const d = g ? dist(g, p) : 0
+    const n = !g ? 'Our pin' : d < 3 ? `By ${g.n}` : d < 9 ? `Near ${g.n}` : `${cap(bearing(g, p).word)} of ${g.n}`
+    const out = { id: here, n, x, y, l, r: g?.r, s: g?.s, pin: true, grace: g, graceDist: d }
+    pinCache.set(here, out)
+    return out
+  }
   if (here.startsWith('region:')) {
     const r = here.slice(7), s = regionShape[r]
     if (r === 'roundtable') return { id: here, n: 'Roundtable Hold', r, noMap: true, x: 0, y: 0, l: 9 }
@@ -76,6 +89,22 @@ export function findByName(name) {
     if (e) return e
   }
   return null
+}
+
+const cap = s => s[0].toUpperCase() + s.slice(1)
+
+// Places worth naming around a spot: dungeons, evergaols, churches, forts, towers.
+export const DUNGEON_RE = /catacomb|cave|tunnel|gaol|hero|legacy|fort|divine|church|rise|ruins|minor_erdtree/
+
+// Turn the level range written for a region into a plain verdict for Teremity.
+export function levelVerdict(range, lvl = 103) {
+  const m = /(\d+)\D+(\d+)/.exec(range || '')
+  if (!m) return null
+  const lo = +m[1], hi = +m[2]
+  if (lvl >= hi + 15) return { k: 'easy', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, Teremity outclasses this area.` }
+  if (lvl >= hi) return { k: 'fair', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, Teremity is comfortably ready.` }
+  if (lvl >= lo) return { k: 'fair', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, this is a fair fight.` }
+  return { k: 'hard', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, expect it to hurt. Go carefully.` }
 }
 
 export function regionName(r) { return REGIONS[r]?.name || r }

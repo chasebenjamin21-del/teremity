@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import { useStore, setState, exportState, importState, resetState } from './lib/store.js'
-import { resolveHere, byId, regionName } from './lib/world.js'
+import { useStore, setState, getState, goHere, exportState, importState, resetState } from './lib/store.js'
+import { resolveHere, byId, regionName, nearest, graces } from './lib/world.js'
 import { MapView } from './components/MapView.jsx'
 import { WhereSheet } from './components/WhereSheet.jsx'
 import { HereTab, PlanTab, BossesTab, LootTab, BuildTab, LearnTab, Detail, setViewer } from './components/Panels.jsx'
@@ -9,7 +9,7 @@ import { Icon } from './components/ui.jsx'
 import { updater } from './lib/updater.js'
 
 const TABS = [['here', 'Here'], ['plan', 'Plan'], ['bosses', 'Bosses'], ['loot', 'Loot'], ['build', 'Teremity'], ['learn', 'Learn']]
-const LAYERS = [['markers', 'Your markers'], ['graces', 'Graces'], ['bosses', 'Bosses'], ['loot', 'Loot'], ['places', 'Places']]
+const LAYERS = [['real', 'Real game map'], ['markers', 'Your markers'], ['graces', 'Graces'], ['bosses', 'Bosses'], ['loot', 'Loot'], ['places', 'Places']]
 
 export function App() {
   const state = useStore()
@@ -22,6 +22,10 @@ export function App() {
   const [term, closeTerm] = useOpenTerm()
   const [viewer, setV] = useState(null)
   const [updateReady, setUpdateReady] = useState(updater.ready)
+  const [toast, setToast] = useState(null)
+  const scroller = useRef(null)
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 8000); return () => clearTimeout(t) }, [toast])
+  useEffect(() => { if (scroller.current) scroller.current.scrollTop = 0 }, [state.here])
   useEffect(() => { updater.listeners.add(setUpdateReady); return () => updater.listeners.delete(setUpdateReady) }, [])
   useEffect(() => { setViewer(setV) }, [])
 
@@ -48,6 +52,15 @@ export function App() {
     }
   }
   const onSelect = useCallback(id => setSelected(id), [])
+  // Tap anywhere on the map: that's where we are. A tap on (or right by) a grace snaps to the grace.
+  const onTapMap = useCallback((p, upp) => {
+    const layer = getState().under ? 1 : 0
+    const snap = nearest(graces, { ...p, l: layer }, { max: Math.max(0.9, 20 * upp), limit: 1, layer })[0]
+    const id = snap ? snap.e.id : `pt:${p.x.toFixed(2)},${p.y.toFixed(2)},${layer}`
+    setSelected(null)
+    const undo = goHere(id)
+    setToast({ n: resolveHere(id)?.n, undo })
+  }, [])
 
   const tab = state.tab
   const Tab = { here: HereTab, plan: PlanTab, bosses: BossesTab, loot: LootTab, build: BuildTab, learn: LearnTab }[tab] || HereTab
@@ -68,7 +81,7 @@ export function App() {
 
       <main class="stage">
         <div class="map-pane">
-          <MapView state={state} here={here} selected={selected} onSelect={onSelect} flyRef={fly} />
+          <MapView state={state} here={here} selected={selected} onSelect={onSelect} onTapMap={onTapMap} flyRef={fly} />
           <div class="map-tools">
             <div class="seg small" role="group" aria-label="Map level">
               <button type="button" aria-pressed={!state.under ? 'true' : 'false'} onClick={() => setState({ under: 0 })}>Surface</button>
@@ -85,7 +98,19 @@ export function App() {
               ))}
             </div>
           )}
-          <p class="map-credit">Map drawn for Teremity from public coordinates. Pinch to zoom.</p>
+          <div class="zoom-tools map-ui">
+            <button type="button" class="iconbtn float" aria-label="Zoom in" onClick={() => fly.current?.zoomBy(0.5)}><Icon name="plus" /></button>
+            <button type="button" class="iconbtn float" aria-label="Zoom out" onClick={() => fly.current?.zoomBy(2)}><Icon name="minus" /></button>
+          </div>
+          {toast ? (
+            <div class="map-toast map-ui" role="status">
+              <span><b>We're here:</b> {toast.n}</span>
+              <button type="button" class="btn small" onClick={() => { toast.undo(); setToast(null) }}>Undo</button>
+            </div>
+          ) : !state.pinned ? (
+            <p class="map-hint map-ui" role="note">Tap the map where you are to drop a pin.</p>
+          ) : null}
+          {(state.under || state.layers.real === 0) ? <p class="map-credit">Drawn map. Pinch to zoom.</p> : null}
         </div>
 
         <section class="panel" aria-label="Guide">
@@ -95,7 +120,7 @@ export function App() {
               <button type="button" role="tab" aria-selected={tab === id ? 'true' : 'false'} class={tab === id ? 'on' : ''} onClick={() => { setState({ tab: id }); setSelected(null) }}>{label}</button>
             ))}
           </nav>
-          <div class="panel-scroll">
+          <div class="panel-scroll" ref={scroller}>
             <Tab state={state} here={here} onWhere={() => setWhere(true)} onFly={flyToId} />
           </div>
         </section>

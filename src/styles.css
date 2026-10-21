@@ -2,7 +2,7 @@
 :root {
   --bg: #efe7d4; --bg2: #e7ddc6; --surface: #f8f2e4; --surface2: #f1e8d4; --line: #d4c6a6; --line2: #c2b28d;
   --text: #2a2319; --muted: #6c604b; --faint: #8e8167;
-  --gold: #9a6a14; --gold-ink: #7b520a; --gold-soft: #e9cf8e; --jade: #2b7663; --ember: #a5422c; --mark: #2f7a63; --mark-ink: #fdf9ee;
+  --gold: #9a6a14; --gold-ink: #7b520a; --gold-soft: #e9cf8e; --jade: #2b7663; --ember: #a5422c; --mark: #2f7a63; --mark-ink: #fdf9ee; --here: #2b6fe0;
   --sea: #ddd3ba; --wave: #c8b991; --halo: #cbbd98; --land-line: #8f7e5c;
   --t-meadow: #c8cf9c; --t-rain: #bec9b5; --t-lake: #b5c8cb; --t-rot: #dcaa95; --t-gold: #e1cb8d; --t-ash: #bfab9f; --t-snow: #e4e6e5; --t-storm: #cbc1d2; --t-deep: #bcbdd6;
   --label: rgba(42, 35, 25, .62); --pin-halo: #f8f2e4;
@@ -17,7 +17,7 @@
   :root:not([data-theme="light"]) {
     --bg: #0f1218; --bg2: #141820; --surface: #191e27; --surface2: #1f2530; --line: #2a3140; --line2: #39425340;
     --text: #ece3cf; --muted: #a59b86; --faint: #7d7563;
-    --gold: #e2b65c; --gold-ink: #f0cd7d; --gold-soft: #3b3020; --jade: #63b9a0; --ember: #dc6d52; --mark: #2f7a63; --mark-ink: #f2f6ef;
+    --gold: #e2b65c; --gold-ink: #f0cd7d; --gold-soft: #3b3020; --jade: #63b9a0; --ember: #dc6d52; --mark: #2f7a63; --mark-ink: #f2f6ef; --here: #4d8dff;
     --sea: #0a0d13; --wave: #18202c; --halo: #232c3b; --land-line: #c9b88f;
     --t-meadow: #3b4a2f; --t-rain: #334239; --t-lake: #283d4a; --t-rot: #522a23; --t-gold: #524526; --t-ash: #3c2825; --t-snow: #48505b; --t-storm: #3b3347; --t-deep: #272b48;
     --label: rgba(236, 227, 207, .62); --pin-halo: #0f1218;
@@ -28,7 +28,7 @@
 :root[data-theme="dark"] {
   --bg: #0f1218; --bg2: #141820; --surface: #191e27; --surface2: #1f2530; --line: #2a3140; --line2: #39425340;
   --text: #ece3cf; --muted: #a59b86; --faint: #7d7563;
-  --gold: #e2b65c; --gold-ink: #f0cd7d; --gold-soft: #3b3020; --jade: #63b9a0; --ember: #dc6d52; --mark: #2f7a63; --mark-ink: #f2f6ef;
+  --gold: #e2b65c; --gold-ink: #f0cd7d; --gold-soft: #3b3020; --jade: #63b9a0; --ember: #dc6d52; --mark: #2f7a63; --mark-ink: #f2f6ef; --here: #4d8dff;
   --sea: #0a0d13; --wave: #18202c; --halo: #232c3b; --land-line: #c9b88f;
   --t-meadow: #3b4a2f; --t-rain: #334239; --t-lake: #283d4a; --t-rot: #522a23; --t-gold: #524526; --t-ash: #3c2825; --t-snow: #48505b; --t-storm: #3b3347; --t-deep: #272b48;
   --label: rgba(236, 227, 207, .62); --pin-halo: #0f1218;
@@ -278,7 +278,7 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 
 /* ---------- map ---------- */
 .map { position: absolute; inset: 0; }
-.map-svg { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.map-svg { position: relative; z-index: 1; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
 .map-svg:active { cursor: grabbing; }
 .sea { fill: var(--sea); }
 .wave { stroke: var(--wave); stroke-width: .16; opacity: .7; }
@@ -332,10 +332,45 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 .pin.sel .g-ring, .pin.sel > circle:first-child, .pin.sel path:first-child { stroke: var(--gold-ink); stroke-width: 2.4; }
 
 .here { pointer-events: none; }
-.here-area { fill: var(--gold); opacity: .12; }
-.here-ring { fill: none; stroke: var(--gold); stroke-width: 2.4; }
-.here-dot { fill: var(--gold); }
-.here-pulse { fill: none; stroke: var(--gold); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: pulse 2.2s ease-out infinite; }
+.here-area { fill: var(--here); opacity: .14; }
+.here-pin { fill: var(--here); stroke: #fff; stroke-width: 2; stroke-linejoin: round; filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+.here-dot { fill: #fff; }
+.here-pulse { fill: none; stroke: var(--here); stroke-width: 2.4; transform-box: fill-box; transform-origin: center; animation: pulse 2.2s ease-out infinite; }
+.near-ring { fill: rgba(70, 140, 255, .07); stroke: var(--here); stroke-opacity: .75; stroke-width: 2px; vector-effect: non-scaling-stroke; pointer-events: none; }
+.map-svg.focus .pin:not(.near):not(.sel):not(.grace) { opacity: .42; }
+
+/* the real map: Chase's own Switch captures, stitched; outside them the game's fog */
+.map { touch-action: none; overflow: hidden; }
+.map.real { background: #5c5a54; }
+.raster { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; }
+.raster img { position: absolute; left: 0; top: 0; max-width: none; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }
+.map[data-zoom="far"] .r-hi { display: none; }
+.map.real .pin .lbl, .map.real .rlabel { fill: #f6eedb; stroke: rgba(22, 18, 12, .88); stroke-opacity: 1; }
+.map.real .rlabel { opacity: .8; }
+.map.real .grace.seen .g-ring, .map.real .grace.seen .g-core { opacity: 0; }
+.map.real .pin.grace { pointer-events: none; }
+.map.real .grace.unseen .g-ring { fill: rgba(22, 18, 12, .35); stroke: #f0cd7d; stroke-dasharray: 3 2.4; opacity: .95; }
+.map.real .grace.unseen .g-core { stroke: #f0cd7d; }
+.map.real .grace.sel .g-ring { opacity: 1; fill: none; stroke: #ffe39a; stroke-width: 2.6; }
+.map.real .boss .b-shape, .map.real .loot path { stroke: rgba(22, 18, 12, .9); }
+.map.real .boss .b-eye { fill: rgba(22, 18, 12, .9); }
+
+.zoom-tools { position: absolute; right: 12px; bottom: 34px; display: grid; gap: 8px; z-index: 2; }
+.map-hint, .map-toast { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 2; max-width: calc(100% - 140px);
+  background: var(--surface); color: var(--text); border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 999px; }
+.map-hint { padding: 9px 16px; font-weight: 600; font-size: 15px; pointer-events: none; text-align: center; }
+.map-toast { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 16px; font-size: 15px; }
+.map-toast span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.map-tools { z-index: 2; }
+.closest { display: flex; gap: 12px; align-items: center; text-align: left; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; cursor: pointer; }
+.closest > span { display: grid; gap: 2px; }
+.closest .dir { width: 26px; height: 26px; flex: none; fill: var(--here); }
+.verdict { border-left: 4px solid var(--jade); padding: 4px 0 4px 12px; font-weight: 500; }
+.verdict.v-hard { border-color: var(--ember); }
+.plan-near ul { list-style: none; display: grid; gap: 6px; }
+.plan-near li { display: flex; align-items: center; gap: 8px; }
+.plan-near .nrow { background: var(--surface); border: 1px solid var(--line); padding: 10px 14px; }
+.l-real .swatch { background: linear-gradient(135deg, #a08a55, #5f7148 55%, #8a4b3e); border-radius: 3px; }
 @keyframes pulse { from { transform: scale(.55); opacity: .9; } to { transform: scale(2.1); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .here-pulse { animation: none; opacity: .5; } .term-card { animation: none; } }
 
@@ -348,8 +383,8 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 .layer .swatch { width: 12px; height: 12px; border-radius: 50%; }
 .l-markers .swatch { background: var(--mark); } .l-graces .swatch { background: var(--gold); } .l-bosses .swatch { background: var(--ember); }
 .l-loot .swatch { background: var(--jade); transform: rotate(45deg); border-radius: 2px; } .l-places .swatch { border: 2px solid var(--muted); border-radius: 3px; }
-.map-credit { position: absolute; left: 12px; bottom: 8px; font-size: 12px; color: var(--faint); pointer-events: none; }
-@media (max-width: 560px) { .map-credit { display: none; } .map-tools { top: 8px; right: 8px; } }
+.map-credit { position: absolute; left: 12px; top: 12px; font-size: 12.5px; color: #f6eedb; text-shadow: 0 1px 2px rgba(0,0,0,.8); pointer-events: none; margin: 0; }
+@media (max-width: 560px) { .map-credit { display: none; } .map-tools { top: 8px; right: 8px; } .zoom-tools { bottom: 12px; right: 8px; } .map-hint, .map-toast { max-width: calc(100% - 90px); left: 12px; transform: none; } }
 
 .here-empty .btn { margin-top: 2px; }
 

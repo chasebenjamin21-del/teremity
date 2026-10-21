@@ -11,7 +11,7 @@ const DEFAULTS = {
   steps: {},           // plan step id -> 1
   route: 'caria',
   theme: 'auto',
-  layers: { graces: 1, bosses: 1, loot: 1, markers: 1, places: 0 },
+  layers: { real: 1, graces: 1, bosses: 1, loot: 1, markers: 1, places: 0 },
   under: 0,            // 1 = show the underground map
   tab: 'here',
   spoilers: 0,         // 1 = show spoilers without tapping
@@ -55,12 +55,16 @@ export function toggle(map, id, preset = 0) {
   })
 }
 
+// Set where we are. Returns a function that undoes it.
 export function goHere(id) {
+  const before = { here: state.here, trail: state.trail, visited: state.visited }
   setState(s => {
-    const trail = [{ id, at: Date.now() }, ...s.trail.filter(t => t.id !== id)].slice(0, 12)
-    const visited = id && !id.startsWith('region:') ? { ...s.visited, [id]: 1 } : s.visited
-    return { here: id, trail, visited, tab: 'here' }
+    const trail = [{ id, at: Date.now() }, ...s.trail.filter(t => t.id !== id)].slice(0, 16)
+    const isPlace = id && !id.startsWith('region:') && !id.startsWith('pt:')
+    const visited = isPlace ? { ...s.visited, [id]: 1 } : s.visited
+    return { here: id, trail, visited, tab: 'here', pinned: id?.startsWith('pt:') ? 1 : s.pinned }
   })
+  return () => setState(before)
 }
 
 export function exportState() { return JSON.stringify(state) }

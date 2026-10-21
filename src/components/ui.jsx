@@ -26,6 +26,8 @@ export function Icon({ name }) {
     chat: <path d="M4 5 H20 V16 H11 L6 20 V16 H4 Z" />,
     down: <path d="M12 3 V21 M5 14 L12 21 L19 14" />,
     back: <path d="M15 5 L8 12 L15 19" />,
+    plus: <path d="M12 5 V19 M5 12 H19" />,
+    minus: <path d="M5 12 H19" />,
   }[name]
   return <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{p}</svg>
 }

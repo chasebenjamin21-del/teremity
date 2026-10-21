@@ -1,6 +1,6 @@
 // The side panel: Here, Plan, Bosses, Loot, Teremity and Learn, plus the detail card for whatever is tapped.
 import { useMemo, useState } from 'preact/hooks'
-import { byId, kindOf, nearest, bosses, loot, markers, graces, landmarksFrom, bearing, dist, howFar, regionName, findByName, resolveHere } from '../lib/world.js'
+import { byId, kindOf, nearest, bosses, loot, markers, graces, places, landmarksFrom, bearing, dist, howFar, regionName, findByName, resolveHere, levelVerdict, DUNGEON_RE } from '../lib/world.js'
 import { REGIONS, REGION_ORDER } from '../content/regions.js'
 import { tipsFor } from '../content/bosses.js'
 import { GLOSSARY, GLOSSARY_GROUPS } from '../content/glossary.js'
@@ -150,6 +150,7 @@ function NearbyLists({ p, state, onFly, compact }) {
   const ls = nearest(loot, p, { max: 16, limit: compact ? 3 : 6, filter: l => !isGot(state, l) })
   const ms = nearest(markers, p, { max: 24, limit: compact ? 2 : 4 })
   const gs = nearest(graces, p, { max: 14, limit: 4, filter: g => g.id !== p.id })
+  const ps = compact ? [] : nearest(places, p, { max: 14, limit: 5, filter: x => DUNGEON_RE.test(x.t || '') })
   const Row = ({ e, sub }) => (
     <li><button type="button" class="nrow" onClick={() => onFly(e.id)}>
       <span class="nname">{e.n}</span><Where e={e} from={p} />{sub ? <span class="nsub">{sub}</span> : null}
@@ -160,6 +161,7 @@ function NearbyLists({ p, state, onFly, compact }) {
       {ms.length > 0 && <section><h3>Your markers nearby</h3><ul>{ms.map(({ e }) => <Row e={e} />)}</ul></section>}
       {bs.length > 0 && <section><h3>Bosses still to beat</h3><ul>{bs.map(({ e }) => <Row e={e} sub={tipsFor(e.n)?.level && tipsFor(e.n).level !== 'done' ? `At your level: ${tipsFor(e.n).level}` : null} />)}</ul></section>}
       {ls.length > 0 && <section><h3>Loot nearby</h3><ul>{ls.map(({ e }) => <Row e={e} sub={LOOT_CATS.find(c => c[0] === catOf(e))?.[1]} />)}</ul></section>}
+      {ps.length > 0 && <section><h3>Dungeons and places nearby</h3><ul>{ps.map(({ e }) => <Row e={e} sub={placeKind(e)} />)}</ul></section>}
       {!compact && gs.length > 0 && <section><h3>Closest graces</h3><ul>{gs.map(({ e }) => <Row e={e} />)}</ul></section>}
     </div>
   )
@@ -216,12 +218,48 @@ function QuickCheck({ here, state, onFly }) {
   )
 }
 
+const PLACE_KINDS = [[/catacomb/, 'Catacombs: a small dungeon with a boss at the end'], [/hero/, "Hero's Grave: a tougher catacomb with chariot traps"], [/cave/, 'Cave: a short dungeon with a boss'], [/tunnel/, 'Tunnel: a mine with smithing stones'], [/gaol/, 'Evergaol: a stone circle with one boss inside'], [/legacy/, 'Legacy dungeon: a huge castle-sized area'], [/divine/, 'Divine Tower'], [/fort/, 'Fort'], [/church/, 'Church: often a Sacred Tear or an item'], [/minor_erdtree/, 'Minor Erdtree'], [/rise/, 'Sorcerer tower'], [/ruins/, 'Ruins: often a cellar with loot']]
+const placeKind = e => PLACE_KINDS.find(([re]) => re.test(e.t || ''))?.[1] || null
+
+// For a dropped pin: the closest grace, which way it is and how far.
+function ClosestGrace({ pin, onFly }) {
+  const g = pin.grace, d = pin.graceDist, b = bearing(pin, g)
+  return (
+    <button type="button" class="closest" onClick={() => onFly(g.id)}>
+      <Dir deg={b.deg} />
+      <span><b>Closest grace: {g.n}</b><span class="muted">{d < 3 ? 'Right here.' : `${howFar(d)[0].toUpperCase() + howFar(d).slice(1)}, to the ${b.word}.`} Rest there to refill flasks and save your spot.</span></span>
+    </button>
+  )
+}
+
+// Plan steps that happen near here.
+function PlanNear({ here, state, onFly }) {
+  if (here.approx) return null
+  const rows = []
+  for (const r of ROUTES) for (const st of r.steps) {
+    if (state.steps[st.id]) continue
+    const e = findByName(st.where)
+    if (e && (e.l || 0) === (here.l || 0) && dist(e, here) < 14) rows.push({ st, e, r })
+  }
+  if (!rows.length) return null
+  return (
+    <section class="plan-near">
+      <h3>On the plan, near here</h3>
+      <ul>{rows.slice(0, 4).map(({ st, e, r }) => (
+        <li><Check on={false} onClick={() => toggle('steps', st.id)} label={`Done: ${st.t}`} />
+          <button type="button" class="nrow" onClick={() => onFly(e.id)}><span class="nname">{st.t}</span><Where e={e} from={here} /><span class="nsub">{r.title}</span></button></li>
+      ))}</ul>
+    </section>
+  )
+}
+
 // ---------- Here ----------
 export function HereTab({ state, here, onWhere, onFly }) {
   if (!here) return (
     <div class="tab-body here-empty">
       <h2 class="display">Start here</h2>
-      <p>Tap <b>Where are we?</b> and type the name of the place on the TV. Everything in this app then lines up around that spot: which way the landmarks are, what's close by, and what's worth doing.</p>
+      <p><b>Tap the map where you are.</b> A pin drops there, and everything in this app lines up around that spot: the closest grace, which way the landmarks are, bosses and loot nearby, and what's worth doing.</p>
+      <p class="muted">Or tap <b>Where are we?</b> and type the name of the place on the TV.</p>
       <button type="button" class="btn primary wide" onClick={onWhere}>Where are we?</button>
       <h3>While you're here</h3>
       <ul class="plain">
@@ -248,14 +286,17 @@ export function HereTab({ state, here, onWhere, onFly }) {
     </div>
   )
   const lms = landmarksFrom(here)
+  const lv = levelVerdict(R.level)
   const secrets = SECRETS[here.r] || []
   const secret = secrets.length ? secrets[(here.n.length + new Date().getHours()) % secrets.length] : null
   return (
     <div class="tab-body">
-      <p class="kicker">You are {here.approx ? 'somewhere in' : 'at'}</p>
+      <p class="kicker">{here.pin ? 'Our pin is' : here.approx ? 'You are somewhere in' : 'You are at'}</p>
       <h2 class="display">{here.approx ? R.name : here.n}</h2>
       {!here.approx && <p class="sub">{R.name}{here.s ? ` · ${here.s}` : ''}</p>}
+      {here.pin && here.grace && <ClosestGrace pin={here} onFly={onFly} />}
       <p class="lead">{(here.s && R.subs?.[here.s]) || R.blurb}</p>
+      {lv && <p class={`verdict v-${lv.k}`}>{lv.t}</p>}
       {lms.length > 0 && (
         <section class="compass">
           <h3>Look around</h3>
@@ -264,11 +305,12 @@ export function HereTab({ state, here, onWhere, onFly }) {
         </section>
       )}
       <QuickCheck here={here} state={state} onFly={onFly} />
-      {!here.approx && <Shots eid={here.id} name={here.n} label="Our screenshots of this place" />}
+      <PlanNear here={here} state={state} onFly={onFly} />
       {secret && <aside class="secret"><h3>Something to tell Chase</h3><p><T>{secret}</T></p></aside>}
       <NearbyLists p={here} state={state} onFly={onFly} />
+      {!here.approx && !here.pin && <Shots eid={here.id} name={here.n} label="Our screenshots of this place" />}
       <div class="row-actions">
-        <button type="button" class="btn" onClick={onWhere}>We moved</button>
+        <button type="button" class="btn" onClick={onWhere}>Find a place by name</button>
         <button type="button" class="btn" onClick={() => askClaude(`What is worth doing around ${here.n} in ${R.name}?`, { where: here.n })}><Icon name="chat" /> Ask Claude about here</button>
       </div>
     </div>
@@ -278,7 +320,7 @@ export function HereTab({ state, here, onWhere, onFly }) {
 // End-of-session recap: everything near tonight's trail that hasn't been answered yet.
 function Recap({ state, onFly }) {
   const since = Date.now() - 14 * 3600 * 1000
-  const stops = state.trail.filter(t => t.at > since && !t.id.startsWith('region:')).map(t => byId.get(t.id)).filter(Boolean)
+  const stops = state.trail.filter(t => t.at > since && !t.id.startsWith('region:')).map(t => resolveHere(t.id)).filter(Boolean)
   if (!stops.length) return null
   const answered = state.recap || {}
   const seen = new Set(), items = []

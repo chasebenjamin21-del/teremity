@@ -1,7 +1,7 @@
 // "Where are we?" — the heart of the app. Type a few letters of what's on the TV, or pick what you see.
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { searchPlaces } from '../lib/search.js'
-import { graces, byId, regionName } from '../lib/world.js'
+import { graces, byId, regionName, resolveHere } from '../lib/world.js'
 import { REGIONS } from '../content/regions.js'
 import { goHere, getState } from '../lib/store.js'
 import { Icon } from './ui.jsx'
@@ -57,7 +57,7 @@ export function WhereSheet({ onClose, onPicked }) {
                 <h3 class="eyebrowless">Recently</h3>
                 <div class="trail">
                   {s.trail.slice(0, 6).map(t => {
-                    const e = t.id.startsWith('region:') ? { n: regionName(t.id.slice(7)) } : byId.get(t.id)
+                    const e = t.id.startsWith('region:') ? { n: regionName(t.id.slice(7)) } : t.id.startsWith('pt:') ? resolveHere(t.id) : byId.get(t.id)
                     return e ? <button type="button" class="pill" onClick={() => pick(t.id)}>{e.n}</button> : null
                   })}
                 </div>

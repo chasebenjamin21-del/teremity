@@ -1,31 +1,42 @@
-// The map: an original schematic of the Lands Between with pinch, pan and fly-to.
-// Pans and zooms touch only the SVG viewBox and one CSS variable, so it stays smooth on an iPad.
+// The map. On the surface it shows the real in-game map, stitched from Chase's own Switch captures;
+// underground (and wherever the game map hasn't been revealed) it falls back to our drawn schematic.
+// Pans and zooms touch only the SVG viewBox, one CSS transform on the picture layer and one CSS
+// variable, so it stays smooth on an iPad. Tapping empty map drops a "We're here" pin.
 import { useEffect, useMemo, useRef } from 'preact/hooks'
-import { world, graces, bosses, loot, markers, places, regionShape } from '../lib/world.js'
+import { world, graces, bosses, loot, markers, places, nearest } from '../lib/world.js'
 import { REGIONS, LANDMARKS } from '../content/regions.js'
-import { getState } from '../lib/store.js'
+import REAL from '../data/realmap.json'
 
-const BOUNDS = { 0: [36, 28, 196, 240], 1: [40, 86, 165, 196] }
-const HOME = { 0: [40, 102, 168, 236], 1: [44, 90, 160, 192] }   // the parts of the world we know so far
+const BOUNDS = { 0: [36, 70, 196, 240], 1: [40, 86, 165, 196] }
+const HOME = { 0: [40, 100, 192, 238], 1: [44, 90, 160, 192] }   // the parts of the world we know so far
+const RQ = 24   // CSS px per world unit inside the picture layer, close to the stitched image's own detail
 const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
+const BASE = import.meta.env.BASE_URL + 'realmap/'
+export const NEAR_R = 16   // world units counted as "nearby" everywhere in the app
 
-export function MapView({ state, here, selected, onSelect, flyRef }) {
-  const wrap = useRef(null), svg = useRef(null)
-  const view = useRef({ cx: 110, cy: 150, upp: 0.25 })
+export function MapView({ state, here, selected, onSelect, onTapMap, flyRef }) {
+  const wrap = useRef(null), svg = useRef(null), raster = useRef(null)
+  const view = useRef({ cx: 110, cy: 160, upp: 0.25 })
   const size = useRef({ w: 800, h: 600 })
   const layer = state.under ? 1 : 0
+  const real = !layer && state.layers.real !== 0
 
   const apply = () => {
     const { cx, cy, upp } = view.current, { w, h } = size.current
     const el = svg.current
     if (!el) return
-    el.setAttribute('viewBox', `${cx - (w * upp) / 2} ${cy - (h * upp) / 2} ${w * upp} ${h * upp}`)
+    const vx = cx - (w * upp) / 2, vy = cy - (h * upp) / 2
+    el.setAttribute('viewBox', `${vx} ${vy} ${w * upp} ${h * upp}`)
     el.style.setProperty('--s', upp)
-    el.dataset.zoom = upp < 0.045 ? 'near' : upp < 0.1 ? 'mid' : 'far'
+    const z = upp < 0.045 ? 'near' : upp < 0.1 ? 'mid' : 'far'
+    el.dataset.zoom = z
+    if (wrap.current) wrap.current.dataset.zoom = z
+    const r = raster.current
+    if (r) r.style.transform = `translate3d(${(REAL.bounds[0] - vx) / upp}px, ${(REAL.bounds[1] - vy) / upp}px, 0) scale(${1 / (upp * RQ)})`
   }
   const clamp = () => {
     const v = view.current, [x0, y0, x1, y1] = BOUNDS[layer], { w, h } = size.current
-    const maxUpp = Math.max((x1 - x0) / w, (y1 - y0) / h) * 1.15
+    const maxUpp = Math.max((x1 - x0) / w, (y1 - y0) / h) * 1.1
     v.upp = Math.min(Math.max(v.upp, 0.012), maxUpp)
     v.cx = Math.min(Math.max(v.cx, x0), x1); v.cy = Math.min(Math.max(v.cy, y0), y1)
   }
@@ -34,13 +45,13 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
     view.current = { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, upp: Math.max((x1 - x0) / w, (y1 - y0) / h) * 1.02 }
   }
 
-  // fly to a point; zoom is in units per pixel
+  // Fly to a point; zoom is in world units per screen pixel.
   const anim = useRef(0)
   const flyTo = (x, y, upp) => {
     const from = { ...view.current }, to = { cx: x, cy: y, upp: upp ?? Math.min(from.upp, 0.07) }
     cancelAnimationFrame(anim.current)
     if (reduce) { view.current = to; clamp(); apply(); return }
-    const t0 = performance.now(), dur = 650
+    const t0 = performance.now(), dur = 600
     const step = now => {
       const t = Math.min(1, (now - t0) / dur), e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
       const lz = Math.log(from.upp) + (Math.log(to.upp) - Math.log(from.upp)) * e
@@ -50,7 +61,11 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
     }
     anim.current = requestAnimationFrame(step)
   }
-  if (flyRef) flyRef.current = { flyTo, fit: () => { const [x0, y0, x1, y1] = BOUNDS[layer], { w, h } = size.current; flyTo((x0 + x1) / 2, (y0 + y1) / 2, Math.max((x1 - x0) / w, (y1 - y0) / h) * 1.02) } }
+  if (flyRef) flyRef.current = {
+    flyTo,
+    fit: () => { const [x0, y0, x1, y1] = HOME[layer], { w, h } = size.current; flyTo((x0 + x1) / 2, (y0 + y1) / 2, Math.max((x1 - x0) / w, (y1 - y0) / h) * 1.02) },
+    zoomBy: f => { const v = view.current; flyTo(v.cx, v.cy, v.upp * f) },
+  }
 
   const ready = useRef(false)
   useEffect(() => {
@@ -60,7 +75,7 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
       if (!ready.current) {
         ready.current = true
         fit()
-        if (here && (here.l || 0) === layer) view.current = { cx: here.x, cy: here.y, upp: here.approx ? 0.12 : 0.07 }
+        if (here && !here.noMap && (here.l || 0) === layer) view.current = { cx: here.x, cy: here.y, upp: here.approx ? 0.12 : 0.06 }
       }
       clamp(); apply()
     })
@@ -68,10 +83,12 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
     return () => ro.disconnect()
   }, [])
   useEffect(() => { if (ready.current) { fit(); clamp(); apply() } }, [layer])
+  useEffect(() => { apply() }, [real])
 
-  // gestures
+  // gestures: drag to pan, pinch or wheel to zoom, tap a pin to open it, tap anywhere else to drop our pin
+  const tapRef = useRef(onTapMap); tapRef.current = onTapMap
   useEffect(() => {
-    const el = svg.current, pts = new Map()
+    const el = wrap.current, pts = new Map()
     let start = null, pinch = null
     const toMap = (px, py) => {
       const r = el.getBoundingClientRect(), { cx, cy, upp } = view.current, { w, h } = size.current
@@ -85,6 +102,7 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
       clamp(); apply()
     }
     const down = e => {
+      if (e.target.closest?.('.map-ui')) return
       cancelAnimationFrame(anim.current)
       el.setPointerCapture?.(e.pointerId)
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY })
@@ -109,24 +127,20 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
         const d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2
         const target = pinch.upp * (pinch.d / Math.max(d, 1))
         zoomAt(mx, my, target / view.current.upp)
-        // pan with the midpoint too
         if (pinch.mx != null) { view.current.cx -= (mx - pinch.mx) * view.current.upp; view.current.cy -= (my - pinch.my) * view.current.upp; clamp(); apply() }
         pinch.mx = mx; pinch.my = my
       }
     }
-    let lastTap = 0
     const up = e => {
+      if (!pts.has(e.pointerId)) return
       pts.delete(e.pointerId)
       if (pts.size < 2) pinch = null
       if (start && pts.size === 0) {
-        const quick = performance.now() - start.t < 450 && start.moved < 10
-        if (quick) {
+        const quick = performance.now() - start.t < 500 && start.moved < 12
+        if (quick && e.type === 'pointerup') {
           const hit = start.target.closest?.('[data-id]')
-          const now = performance.now()
           if (hit) onSelect(hit.dataset.id)
-          else if (now - lastTap < 320) zoomAt(e.clientX, e.clientY, 0.5)
-          else onSelect(null)
-          lastTap = now
+          else tapRef.current?.(toMap(e.clientX, e.clientY), view.current.upp)
         }
         start = null
       }
@@ -153,9 +167,30 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
     places: places.filter(p => (p.l || 0) === layer && /legacy|fort|divine|minor_erdtree|church|catacomb|cave|tunnel|gaol|ruins|rise/.test(p.t || '')),
   }), [layer])
 
+  // Everything inside the ring around our spot is what the panel lists.
+  const focus = here && !here.noMap && !here.approx && (here.l || 0) === layer ? here : null
+  const near = useMemo(() => {
+    if (!focus) return null
+    const s = new Set()
+    for (const list of [graces, bosses, loot, markers, places]) for (const { e } of nearest(list, focus, { max: NEAR_R, limit: 99, layer })) s.add(e.id)
+    return s
+  }, [focus?.id, layer])
+  const nc = id => (near && near.has(id) ? ' near' : '')
+  const unrevealedLabel = s => ['next', 'later'].includes(REGIONS[s.id]?.status)
+
   return (
-    <div class="map" ref={wrap}>
-      <svg ref={svg} class="map-svg" role="application" aria-label="Map of the Lands Between. Drag to move, pinch to zoom, tap a pin for details.">
+    <div class={`map ${real ? 'real' : 'drawn'}`} ref={wrap}>
+      {real && (
+        <div class="raster" ref={raster} aria-hidden="true">
+          <img class="r-lo" src={BASE + REAL.lo} alt="" draggable={false} decoding="async"
+            style={{ width: `${(REAL.bounds[2] - REAL.bounds[0]) * RQ}px`, height: `${(REAL.bounds[3] - REAL.bounds[1]) * RQ}px` }} />
+          {REAL.tiles.map(t => (
+            <img class="r-hi" src={BASE + t.f} alt="" draggable={false} decoding="async"
+              style={{ left: `${(t.x - REAL.bounds[0]) * RQ}px`, top: `${(t.y - REAL.bounds[1]) * RQ}px`, width: `${t.w * RQ + 1}px`, height: `${t.h * RQ + 1}px` }} />
+          ))}
+        </div>
+      )}
+      <svg ref={svg} class={`map-svg ${focus ? 'focus' : ''}`} role="application" aria-label="Map of the Lands Between. Drag to move, pinch to zoom, tap a pin for details, or tap anywhere to mark where you are.">
         <defs>
           <pattern id="waves" width="6" height="3.2" patternUnits="userSpaceOnUse">
             <path d="M0 1.6 q1.5 -1 3 0 t3 0" fill="none" class="wave" />
@@ -163,49 +198,54 @@ export function MapView({ state, here, selected, onSelect, flyRef }) {
           <radialGradient id="treeGlow"><stop offset="0" class="tg0" /><stop offset="1" class="tg1" /></radialGradient>
           <pattern id="grain" width="2.2" height="2.2" patternUnits="userSpaceOnUse"><circle cx=".55" cy=".55" r=".16" class="grain-dot" /><circle cx="1.65" cy="1.65" r=".12" class="grain-dot" /></pattern>
         </defs>
-        <rect x="-50" y="-50" width="400" height="400" class="sea" />
-        <rect x="-50" y="-50" width="400" height="400" fill="url(#waves)" class="sea-lines" />
-        <path d={world.land[layer ? 'under' : 'surface']} class="land-halo" />
-        {shapes.map(s => <path d={s.d} class={`region r-${s.id} tone-${REGIONS[s.id]?.tone} st-${(REGIONS[s.id]?.status || '').replace(/ /g, '-')}`} />)}
-        {shapes.map(s => <path d={s.d} class="region-grain" />)}
-        {!layer && <ErdtreeGlyph />}
-        {!layer && LANDMARKS.filter(l => l.id !== 'erdtree').map(l => (
-          <g class="landmark" style={at(l)}><path d="M-5 4 V-3 h2 v2 h2 v-3 h2 v3 h2 v-2 h2 V4 Z" /></g>
-        ))}
-        {shapes.map(s => (
+        {!real && <>
+          <rect x="-50" y="-50" width="400" height="400" class="sea" />
+          <rect x="-50" y="-50" width="400" height="400" fill="url(#waves)" class="sea-lines" />
+          <path d={world.land[layer ? 'under' : 'surface']} class="land-halo" />
+          {shapes.map(s => <path d={s.d} class={`region r-${s.id} tone-${REGIONS[s.id]?.tone} st-${(REGIONS[s.id]?.status || '').replace(/ /g, '-')}`} />)}
+          {shapes.map(s => <path d={s.d} class="region-grain" />)}
+          {!layer && <ErdtreeGlyph />}
+          {!layer && LANDMARKS.filter(l => l.id !== 'erdtree').map(l => (
+            <g class="landmark" style={at(l)}><path d="M-5 4 V-3 h2 v2 h2 v-3 h2 v3 h2 v-2 h2 V4 Z" /></g>
+          ))}
+        </>}
+        {shapes.filter(s => !real || unrevealedLabel(s)).map(s => (
           <g class="rlabel-g" style={at({ x: s.cx, y: s.cy })}><text class="rlabel">{(REGIONS[s.id]?.name || s.id).replace(', Royal Capital', '').replace('of the Giants', '').trim()}</text></g>
         ))}
+        {focus && <circle cx={focus.x} cy={focus.y} r={NEAR_R} class="near-ring" />}
         {L.places ? pins.places.map(p => (
-          <g class="pin place" data-id={p.id} style={at(p)}><rect x="-3.5" y="-3.5" width="7" height="7" rx="1.5" /><circle r="16" class="hit" /><text class="lbl" y="15">{p.n}</text></g>
+          <g class={`pin place${nc(p.id)}`} data-id={p.id} style={at(p)}><rect x="-3.5" y="-3.5" width="7" height="7" rx="1.5" /><circle r="16" class="hit" /><text class="lbl" y="15">{p.n}</text></g>
         )) : null}
         {L.graces ? pins.graces.map(g => (
-          <g class={`pin grace ${seen(g) ? 'seen' : 'unseen'} ${selected === g.id ? 'sel' : ''}`} data-id={g.id} style={at(g)}>
-            <circle r="6.2" class="g-ring" /><path d="M0 -3.4 L2.8 0 L0 3.4 L-2.8 0 Z" class="g-core" /><circle r="16" class="hit" />
+          <g class={`pin grace ${seen(g) ? 'seen' : 'unseen'} ${selected === g.id ? 'sel' : ''}${nc(g.id)}`} data-id={g.id} style={at(g)}>
+            <circle r="6.2" class="g-ring" /><path d="M0 -3.4 L2.8 0 L0 3.4 L-2.8 0 Z" class="g-core" /><circle r="14" class="hit" />
             <text class="lbl" y="17">{g.n}</text>
           </g>
         )) : null}
         {L.loot ? pins.loot.map(l => (
-          <g class={`pin loot ${isGot(l) ? 'got' : ''} ${selected === l.id ? 'sel' : ''}`} data-id={l.id} style={at(l)}>
-            <path d="M-5.5 -1.5 L-2.8 -5.5 L2.8 -5.5 L5.5 -1.5 L0 6 Z" /><path d="M-5.5 -1.5 H5.5 M-2.8 -5.5 L0 6 L2.8 -5.5" class="facet" /><circle r="15" class="hit" />
+          <g class={`pin loot ${isGot(l) ? 'got' : ''} ${selected === l.id ? 'sel' : ''}${nc(l.id)}`} data-id={l.id} style={at(l)}>
+            <path d="M-5.5 -1.5 L-2.8 -5.5 L2.8 -5.5 L5.5 -1.5 L0 6 Z" /><path d="M-5.5 -1.5 H5.5 M-2.8 -5.5 L0 6 L2.8 -5.5" class="facet" /><circle r="14" class="hit" />
             <text class="lbl" y="17">{l.n}</text>
           </g>
         )) : null}
         {L.bosses ? pins.bosses.map(b => (
-          <g class={`pin boss ${b.m ? 'main' : 'minor'} ${isDone(b) ? 'done' : ''} ${selected === b.id ? 'sel' : ''}`} data-id={b.id} style={at(b)}>
-            <path d="M0 -7.5 L6.5 0 L0 7.5 L-6.5 0 Z" class="b-shape" /><circle r="2.1" class="b-eye" /><circle r="16" class="hit" />
+          <g class={`pin boss ${b.m ? 'main' : 'minor'} ${isDone(b) ? 'done' : ''} ${selected === b.id ? 'sel' : ''}${nc(b.id)}`} data-id={b.id} style={at(b)}>
+            <path d="M0 -7.5 L6.5 0 L0 7.5 L-6.5 0 Z" class="b-shape" /><circle r="2.1" class="b-eye" /><circle r="15" class="hit" />
             <text class="lbl" y="18">{b.n}</text>
           </g>
         )) : null}
         {L.markers ? pins.markers.map(m => (
-          <g class={`pin marker ${selected === m.id ? 'sel' : ''}`} data-id={m.id} style={at(m)}>
-            <circle r="9.5" class="m-disc" /><MarkerGlyph sym={m.sym} /><circle r="17" class="hit" />
+          <g class={`pin marker ${selected === m.id ? 'sel' : ''}${nc(m.id)}`} data-id={m.id} style={at(m)}>
+            <circle r="9.5" class="m-disc" /><MarkerGlyph sym={m.sym} /><circle r="16" class="hit" />
             <text class="lbl" y="21">{m.n}</text>
           </g>
         )) : null}
-        {here && (here.l || 0) === layer && (
-          <g class="here" style={at(here)} aria-label="You are here">
+        {here && !here.noMap && (here.l || 0) === layer && (
+          <g class={`here ${here.pin ? 'is-pin' : ''}`} style={at(here)} aria-label="We are here">
             {here.approx ? <circle r="34" class="here-area" /> : null}
-            <circle r="13" class="here-pulse" /><circle r="8.5" class="here-ring" /><circle r="3.6" class="here-dot" />
+            <circle r="15" class="here-pulse" />
+            <path d="M0 0 C-3 -6 -9 -10 -9 -17 A9 9 0 1 1 9 -17 C9 -10 3 -6 0 0 Z" class="here-pin" />
+            <circle cy="-17" r="3.6" class="here-dot" />
           </g>
         )}
       </svg>

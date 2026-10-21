@@ -27,7 +27,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,json}', 'assets/*latin-[0-9]*.woff2', 'assets/*latin-ext-[0-9]*.woff2'],
+        globPatterns: ['**/*.{js,css,html,png,svg,json,webp}', 'assets/*latin-[0-9]*.woff2', 'assets/*latin-ext-[0-9]*.woff2'],
         navigateFallback: '/teremity/index.html',
       },
     }),
