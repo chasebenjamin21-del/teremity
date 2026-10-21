@@ -275,6 +275,32 @@ export function HereTab({ state, here, onWhere, onFly }) {
   )
 }
 
+// End-of-session recap: everything near tonight's trail that hasn't been answered yet.
+function Recap({ state, onFly }) {
+  const since = Date.now() - 14 * 3600 * 1000
+  const stops = state.trail.filter(t => t.at > since && !t.id.startsWith('region:')).map(t => byId.get(t.id)).filter(Boolean)
+  if (!stops.length) return null
+  const answered = state.recap || {}
+  const seen = new Set(), items = []
+  for (const p of stops) {
+    for (const { e } of nearest(bosses, p, { max: 6, limit: 4, filter: b => !isDone(state, b) && !answered[b.id] })) if (!seen.has(e.id)) { seen.add(e.id); items.push({ e, kind: 'boss' }) }
+    for (const { e } of nearest(loot, p, { max: 4, limit: 4, filter: l => !isGot(state, l) && !answered[l.id] })) if (!seen.has(e.id)) { seen.add(e.id); items.push({ e, kind: 'loot' }) }
+  }
+  const no = id => setState(s => ({ recap: { ...(s.recap || {}), [id]: 1 } }))
+  return (
+    <section class="quick recap">
+      <h3>Tonight's recap</h3>
+      <p class="muted small">You stopped at {stops.length} {stops.length === 1 ? 'place' : 'places'} tonight: {stops.slice(0, 4).map(p => p.n).join(', ')}{stops.length > 4 ? ', and more' : ''}. {items.length ? 'Did any of these happen?' : 'Everything nearby is answered.'}</p>
+      {items.length > 0 && <ul>{items.slice(0, 12).map(({ e, kind }) => (
+        <li>
+          <button type="button" class="qtext" onClick={() => onFly(e.id)}>{kind === 'boss' ? `Beat ${e.n}?` : `Got the ${e.n}${e.w ? ` (${e.w})` : ''}?`}</button>
+          <span class="qbtns"><button type="button" class="btn small primary" onClick={() => kind === 'boss' ? toggle('done', e.id, e.d) : toggle('got', e.id)}>Yes</button><button type="button" class="btn small" onClick={() => no(e.id)}>No</button></span>
+        </li>
+      ))}</ul>}
+    </section>
+  )
+}
+
 // ---------- Plan ----------
 export function PlanTab({ state, onFly }) {
   const route = ROUTES.find(r => r.id === state.route) || ROUTES[0]
@@ -283,6 +309,7 @@ export function PlanTab({ state, onFly }) {
   return (
     <div class="tab-body">
       <h2 class="display">Today's plan</h2>
+      <Recap state={state} onFly={onFly} />
       <p class="lead">Three good ways to spend the session. All of them suit level 103. Pick one, and tick steps off as you go.</p>
       <div class="routes">
         {ROUTES.map(r => (
