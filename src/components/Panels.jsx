@@ -5,7 +5,8 @@ import { REGIONS, REGION_ORDER } from '../content/regions.js'
 import { tipsFor } from '../content/bosses.js'
 import { GLOSSARY, GLOSSARY_GROUPS } from '../content/glossary.js'
 import { TEREMITY, BUILD_ADVICE, TALISMAN_SETS, PREP, ROUTES, SECRETS, VIDEO_TIPS, GRIND } from '../content/guide.js'
-import { setState, toggle, goHere } from '../lib/store.js'
+import { setState, getState, toggle, goHere } from '../lib/store.js'
+import { currentRoute, nextStep, stopOf, bossOf } from '../lib/plan.js'
 import { T, Spoiler, askClaude, showTerm } from './Text.jsx'
 import { Check, Dir, Icon } from './ui.jsx'
 import { MarkerGlyph } from './MapView.jsx'
@@ -232,41 +233,58 @@ function ClosestGrace({ pin, onFly }) {
   )
 }
 
-// Plan steps that happen near here.
-function PlanNear({ here, state, onFly }) {
-  if (here.approx) return null
-  const rows = []
-  for (const r of ROUTES) for (const st of r.steps) {
-    if (state.steps[st.id]) continue
-    const e = findByName(st.where)
-    if (e && (e.l || 0) === (here.l || 0) && dist(e, here) < 14) rows.push({ st, e, r })
-  }
-  if (!rows.length) return null
+
+// ---------- Around us ----------
+const KIND = { boss: 'Boss', loot: 'Loot', marker: 'Your marker', place: 'Dungeon or landmark' }
+// The few things closest to us, of every kind, in one short list.
+function CloseBy({ p, state, onFly }) {
+  const all = [
+    ...nearest(markers, p, { max: 14, limit: 6 }).map(x => ({ ...x, k: 'marker' })),
+    ...nearest(bosses, p, { max: 14, limit: 6, filter: b => !isDone(state, b) }).map(x => ({ ...x, k: 'boss' })),
+    ...nearest(loot, p, { max: 12, limit: 6, filter: l => !isGot(state, l) }).map(x => ({ ...x, k: 'loot' })),
+    ...nearest(places, p, { max: 12, limit: 6, filter: x => DUNGEON_RE.test(x.t || '') }).map(x => ({ ...x, k: 'place' })),
+  ].sort((a, b) => a.d - b.d).slice(0, 6)
+  if (!all.length) return <p class="muted">Nothing we track is close to this spot. Try a spot nearer the action.</p>
   return (
-    <section class="plan-near">
-      <h3>On the plan, near here</h3>
-      <ul>{rows.slice(0, 4).map(({ st, e, r }) => (
-        <li><Check on={false} onClick={() => toggle('steps', st.id)} label={`Done: ${st.t}`} />
-          <button type="button" class="nrow" onClick={() => onFly(e.id)}><span class="nname">{st.t}</span><Where e={e} from={here} /><span class="nsub">{r.title}</span></button></li>
+    <section class="closeby">
+      <h3>Close by</h3>
+      <ul>{all.map(({ e, k }) => (
+        <li><button type="button" class={`nrow k-${k}`} onClick={() => onFly(e.id)}>
+          <span class="nkind">{KIND[k]}</span><span class="nname">{e.n}</span><Where e={e} from={p} />
+        </button></li>
       ))}</ul>
     </section>
   )
 }
 
-// ---------- Here ----------
-export function HereTab({ state, here, onWhere, onFly }) {
+// A short pointer from wherever we are to the next step of the plan.
+function PlanPointer({ state, here, onShow }) {
+  const route = currentRoute(state), st = nextStep(state, route)
+  if (!st) return null
+  const e = stopOf(st), n = route.steps.indexOf(st) + 1
+  const same = e && here && !here.noMap && (e.l || 0) === (here.l || 0)
+  const d = same ? dist(e, here) : null, b = same ? bearing(here, e) : null
+  return (
+    <section class="plan-pointer">
+      <p class="pp-label">Next on the plan</p>
+      <p class="pp-step"><span class="snum">{n}</span><b>{st.t}</b></p>
+      {same && <p class="pp-where"><Dir deg={b.deg} /> {d < 3 ? 'Right here.' : `${cap(howFar(d))}, to the ${b.word}.`}</p>}
+      <div class="row-actions">
+        {e && <button type="button" class="btn small" onClick={() => onShow(e.id)}>Show it on the map</button>}
+        <button type="button" class="btn small" onClick={() => setState({ tab: 'plan' })}>Open the plan</button>
+      </div>
+    </section>
+  )
+}
+const cap = t => t[0].toUpperCase() + t.slice(1)
+
+export function HereTab({ state, here, onWhere, onFly, onShow }) {
   if (!here) return (
     <div class="tab-body here-empty">
-      <h2 class="display">Start here</h2>
-      <p><b>Tap the map where you are.</b> A pin drops there, and everything in this app lines up around that spot: the closest grace, which way the landmarks are, bosses and loot nearby, and what's worth doing.</p>
-      <p class="muted">Or tap <b>Where are we?</b> and type the name of the place on the TV.</p>
+      <h2 class="display">Where are you?</h2>
+      <p class="lead"><b>Tap the map where you are.</b> A blue pin drops there, and this page fills in with what's close by and which way to go next.</p>
+      <p class="muted">Or tap <b>Where are we?</b> at the top and type the name of the place on the TV.</p>
       <button type="button" class="btn primary wide" onClick={onWhere}>Where are we?</button>
-      <h3>While you're here</h3>
-      <ul class="plain">
-        <li><T>Any underlined word explains itself when you tap it. Try Golden Seed or Poise.</T></li>
-        <li>On the map, the gold circles are the game's own Sites of Grace. Green discs are your markers, red diamonds are bosses and teal gems are loot. Tap any of them for details.</li>
-        <li>Progress is saved on this iPad, so tick things off as you go.</li>
-      </ul>
     </div>
   )
   const R = REGIONS[here.r] || {}
@@ -291,24 +309,32 @@ export function HereTab({ state, here, onWhere, onFly }) {
   const secret = secrets.length ? secrets[(here.n.length + new Date().getHours()) % secrets.length] : null
   return (
     <div class="tab-body">
-      <p class="kicker">{here.pin ? 'Our pin is' : here.approx ? 'You are somewhere in' : 'You are at'}</p>
-      <h2 class="display">{here.approx ? R.name : here.n}</h2>
-      {!here.approx && <p class="sub">{R.name}{here.s ? ` · ${here.s}` : ''}</p>}
+      <header class="here-head">
+        <p class="kicker">{here.pin ? 'Your pin is' : here.approx ? 'You are somewhere in' : 'You are at'}</p>
+        <h2 class="display">{here.approx ? R.name : here.n}</h2>
+        <p class="sub">{!here.approx ? R.name : 'Tap the map to be more exact.'}{lv && <span class={`lvchip v-${lv.k}`}>{lv.short}</span>}</p>
+      </header>
       {here.pin && here.grace && <ClosestGrace pin={here} onFly={onFly} />}
-      <p class="lead">{(here.s && R.subs?.[here.s]) || R.blurb}</p>
-      {lv && <p class={`verdict v-${lv.k}`}>{lv.t}</p>}
-      {lms.length > 0 && (
-        <section class="compass">
-          <h3>Look around</h3>
-          <ul>{lms.map(l => <li><Dir deg={l.b.deg} /><span><b>{l.n[0].toUpperCase() + l.n.slice(1)}</b> is to the {l.b.word}{l.id === 'erdtree' ? ' (the giant golden tree)' : ''}. <span class="muted">{howFar(l.d)}</span></span></li>)}</ul>
-          <p class="muted small">The compass bar at the top of the screen shows N, E, S and W.</p>
-        </section>
-      )}
+      <PlanPointer state={state} here={here} onShow={onShow} />
       <QuickCheck here={here} state={state} onFly={onFly} />
-      <PlanNear here={here} state={state} onFly={onFly} />
+      {!here.approx && <CloseBy p={here} state={state} onFly={onFly} />}
       {secret && <aside class="secret"><h3>Something to tell Chase</h3><p><T>{secret}</T></p></aside>}
-      <NearbyLists p={here} state={state} onFly={onFly} />
-      {!here.approx && !here.pin && <Shots eid={here.id} name={here.n} label="Our screenshots of this place" />}
+      <details class="fold">
+        <summary>More about this area</summary>
+        <div class="fold-body">
+          <p class="lead">{(here.s && R.subs?.[here.s]) || R.blurb}</p>
+          {lv && <p class={`verdict v-${lv.k}`}>{lv.t}</p>}
+          {lms.length > 0 && (
+            <section class="compass">
+              <h3>Which way things are</h3>
+              <ul>{lms.map(l => <li><Dir deg={l.b.deg} /><span><b>{cap(l.n)}</b> is to the {l.b.word}{l.id === 'erdtree' ? ' (the giant golden tree)' : ''}. <span class="muted">{cap(howFar(l.d))}.</span></span></li>)}</ul>
+              <p class="muted small">The compass bar at the top of the TV screen shows north, east, south and west.</p>
+            </section>
+          )}
+          <NearbyLists p={here} state={state} onFly={onFly} />
+          {!here.approx && !here.pin && <Shots eid={here.id} name={here.n} label="Our screenshots of this place" />}
+        </div>
+      </details>
       <div class="row-actions">
         <button type="button" class="btn" onClick={onWhere}>Find a place by name</button>
         <button type="button" class="btn" onClick={() => askClaude(`What is worth doing around ${here.n} in ${R.name}?`, { where: here.n })}><Icon name="chat" /> Ask Claude about here</button>
@@ -318,7 +344,7 @@ export function HereTab({ state, here, onWhere, onFly }) {
 }
 
 // End-of-session recap: everything near tonight's trail that hasn't been answered yet.
-function Recap({ state, onFly }) {
+function Recap({ state, onFly, bare }) {
   const since = Date.now() - 14 * 3600 * 1000
   const stops = state.trail.filter(t => t.at > since && !t.id.startsWith('region:')).map(t => resolveHere(t.id)).filter(Boolean)
   if (!stops.length) return null
@@ -331,7 +357,7 @@ function Recap({ state, onFly }) {
   const no = id => setState(s => ({ recap: { ...(s.recap || {}), [id]: 1 } }))
   return (
     <section class="quick recap">
-      <h3>Tonight's recap</h3>
+      {!bare && <h3>Tonight's recap</h3>}
       <p class="muted small">You stopped at {stops.length} {stops.length === 1 ? 'place' : 'places'} tonight: {stops.slice(0, 4).map(p => p.n).join(', ')}{stops.length > 4 ? ', and more' : ''}. {items.length ? 'Did any of these happen?' : 'Everything nearby is answered.'}</p>
       {items.length > 0 && <ul>{items.slice(0, 12).map(({ e, kind }) => (
         <li>
@@ -344,49 +370,136 @@ function Recap({ state, onFly }) {
 }
 
 // ---------- Plan ----------
-export function PlanTab({ state, onFly }) {
-  const route = ROUTES.find(r => r.id === state.route) || ROUTES[0]
-  const showStop = name => { const e = findByName(name); if (e) onFly(e.id) }
-  const doneCount = r => r.steps.filter(s => state.steps[s.id]).length
+export function PlanTab({ state, here, onFly, onShow }) {
+  const [choosing, setChoosing] = useState(false)
+  const route = currentRoute(state)
+  const steps = route.steps
+  const doneN = steps.filter(x => state.steps[x.id]).length
+  const next = nextStep(state, route)
+  const idx = next ? steps.indexOf(next) : -1
+  const show = st => { const e = stopOf(st); if (e) onShow(e.id) }
+  const finish = st => {
+    setState(s => ({ steps: { ...s.steps, [st.id]: 1 }, stepPick: null }))
+    document.querySelector('.panel-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
+    const after = nextStep(getState(), route)
+    if (after) setTimeout(() => show(after), 200)
+  }
+  const prepLeft = PREP.filter(p => !state.steps[p.id]).length
+  const e = next && stopOf(next), boss = next && bossOf(next)
+  const same = e && here && !here.noMap && (e.l || 0) === (here.l || 0)
+  const d = same ? dist(e, here) : null, b = same ? bearing(here, e) : null
+
+  if (choosing) return (
+    <div class="tab-body">
+      <p class="kicker">Choose tonight's plan</p>
+      <h2 class="display">What do you feel like?</h2>
+      <p class="lead">Each plan is a short list of steps that suits level 103. You can switch any time; ticked steps stay ticked.</p>
+      <div class="routes">
+        {ROUTES.map(r => {
+          const dn = r.steps.filter(x => state.steps[x.id]).length
+          return (
+            <button type="button" class={`route ${r.id === route.id ? 'on' : ''}`} aria-pressed={r.id === route.id ? 'true' : 'false'} onClick={() => { setState({ route: r.id, stepPick: null }); setChoosing(false) }}>
+              <span class="route-title">{r.title}{r.pick ? <span class="badge">Our pick</span> : null}</span>
+              <span class="route-why">{r.why}</span>
+              <span class="route-meta">{r.time}. {dn ? `${dn} of ${r.steps.length} steps done.` : `${r.steps.length} steps.`}</span>
+            </button>
+          )
+        })}
+      </div>
+      <button type="button" class="btn" onClick={() => setChoosing(false)}>Keep the current plan</button>
+    </div>
+  )
+
+  return (
+    <div class="tab-body plan">
+      <header class="plan-head">
+        <p class="kicker">Tonight's plan</p>
+        <h2 class="display">{route.title}</h2>
+        <div class="progress" role="img" aria-label={`${doneN} of ${steps.length} steps done`}>
+          {steps.map((x, i) => <span class={`seg-dot ${state.steps[x.id] ? 'done' : ''} ${x === next ? 'now' : ''}`} />)}
+        </div>
+        <p class="sub">{doneN} of {steps.length} steps done · <button type="button" class="link" onClick={() => setChoosing(true)}>Change plan</button></p>
+      </header>
+
+      {next ? (
+        <article class="next-step">
+          <p class="ns-label"><span class="snum big">{idx + 1}</span>{doneN === 0 && idx === 0 ? 'First step' : 'Next step'}</p>
+          <h3 class="ns-title">{next.t.replace(/^Optional: /, '')}</h3>
+          {/^Optional/.test(next.t) && <p class="ns-optional">Optional. Skip it if you'd rather keep moving.</p>}
+          <p class="ns-text"><T>{next.d}</T></p>
+          {e && <p class="ns-where">{same ? <Dir deg={b.deg} /> : <Icon name="target" />} {same ? (d < 3 ? 'You are right there.' : `${e.n}: ${howFar(d)}, to the ${b.word} of your pin.`) : `${e.n}. Tap the map where you are, and this will say which way to go.`}</p>}
+          <div class="ns-actions">
+            <button type="button" class="btn primary" onClick={() => finish(next)}>Done, next step</button>
+            {e && <button type="button" class="btn" onClick={() => show(next)}>Show on map</button>}
+          </div>
+          <div class="ns-more">
+            {boss && <button type="button" class="link" onClick={() => onFly(boss.id)}>Tips for {boss.n}</button>}
+            <button type="button" class="link" onClick={() => askClaude(`We're on this step of our plan: "${next.t}". ${next.d} Explain simply what to do, and anything to watch out for.`, { where: here?.n })}>Ask Claude about this step</button>
+          </div>
+        </article>
+      ) : (
+        <article class="next-step finished">
+          <p class="ns-label">All done</p>
+          <h3 class="ns-title">You finished {route.title}.</h3>
+          <p class="ns-text">Nice work. Pick the next plan when you're ready.</p>
+          <div class="ns-actions"><button type="button" class="btn primary" onClick={() => setChoosing(true)}>Choose the next plan</button></div>
+        </article>
+      )}
+
+      <section class="all-steps">
+        <h3>All the steps</h3>
+        <ol class="step-list">
+          {steps.map((x, i) => (
+            <li class={`${state.steps[x.id] ? 'done' : ''} ${x === next ? 'now' : ''}`}>
+              <Check on={!!state.steps[x.id]} onClick={() => toggle('steps', x.id)} label={`Done: ${x.t}`} />
+              <button type="button" class="srow" onClick={() => { setState({ stepPick: x.id }); show(x) }}>
+                <span class="snum">{i + 1}</span><span class="stitle">{x.t}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+        <p class="muted small">Tap a step to make it the next one and see it on the map. The numbers match the gold pins on the map.</p>
+      </section>
+
+      <details class="fold">
+        <summary>Before you start: Chase's menu prep{prepLeft ? ` (${prepLeft} left)` : ' (all done)'}</summary>
+        <div class="fold-body">
+          <p class="muted">Menu things only. None of these move the story forward.</p>
+          <ul class="checks">
+            {PREP.map(p => (
+              <li><Check on={!!state.steps[p.id]} onClick={() => toggle('steps', p.id)} label={p.t} /><div><b>{p.t}</b><p><T>{p.d}</T></p></div></li>
+            ))}
+          </ul>
+        </div>
+      </details>
+      <details class="fold">
+        <summary>Need more runes?</summary>
+        <div class="fold-body"><ul class="cards">{GRIND.map(g => <li class="card"><b>{g.n}</b><span class="muted">{g.runes}</span><p><T>{g.how}</T></p></li>)}</ul></div>
+      </details>
+      <details class="fold">
+        <summary>Tonight's recap</summary>
+        <div class="fold-body"><Recap state={state} onFly={onFly} bare />{!state.trail.length && <p class="muted">Drop pins on the map as you play, and this will list the bosses and loot near where you've been, so you can tick them off at the end.</p>}</div>
+      </details>
+    </div>
+  )
+}
+
+// ---------- More ----------
+const MORE = [
+  ['bosses', 'Bosses', 'Tips to read out loud during a fight, and which bosses you have beaten.'],
+  ['loot', 'Loot', 'Golden Seeds, Sacred Tears, upgrade stones and other things worth picking up.'],
+  ['build', 'Teremity', 'Our character: stats, gear, and where to put the next levels.'],
+  ['learn', 'Learn', 'Game words explained, secrets, tips from the videos, and Ask Claude.'],
+]
+export const MORE_TABS = MORE.map(m => m[0])
+export function MoreTab() {
   return (
     <div class="tab-body">
-      <h2 class="display">Today's plan</h2>
-      <Recap state={state} onFly={onFly} />
-      <p class="lead">Three good ways to spend the session. All of them suit level 103. Pick one, and tick steps off as you go.</p>
-      <div class="routes">
-        {ROUTES.map(r => (
-          <button type="button" class={`route ${r.id === route.id ? 'on' : ''}`} aria-pressed={r.id === route.id ? 'true' : 'false'} onClick={() => setState({ route: r.id })}>
-            <span class="route-title">{r.title}{r.pick ? <span class="badge">Our pick</span> : null}</span>
-            <span class="route-why">{r.why}</span>
-            <span class="route-meta">{r.time} · {doneCount(r)} of {r.steps.length} done</span>
-          </button>
-        ))}
+      <h2 class="display">More</h2>
+      <p class="lead">The deeper guides. You can play a whole session without opening any of these.</p>
+      <div class="more-grid">
+        {MORE.map(([id, t, d]) => <button type="button" class="more-card" onClick={() => setState({ tab: id })}><b>{t}</b><span>{d}</span></button>)}
       </div>
-      <ol class="steps">
-        {route.steps.map(s => (
-          <li class={state.steps[s.id] ? 'done' : ''}>
-            <Check on={!!state.steps[s.id]} onClick={() => toggle('steps', s.id)} label={`Done: ${s.t}`} />
-            <div>
-              <b>{s.t}</b>
-              <p><T>{s.d}</T></p>
-              {s.where && <button type="button" class="link" onClick={() => showStop(s.where)}>Show {s.where} on the map</button>}
-            </div>
-          </li>
-        ))}
-      </ol>
-      <section class="prep">
-        <h3>Chase's prep before you start</h3>
-        <p class="muted">Menu things only. None of these move the story forward.</p>
-        <ul class="checks">
-          {PREP.map(p => (
-            <li><Check on={!!state.steps[p.id]} onClick={() => toggle('steps', p.id)} label={p.t} /><div><b>{p.t}</b><p><T>{p.d}</T></p></div></li>
-          ))}
-        </ul>
-      </section>
-      <section>
-        <h3>Rune grinding, for Truc's turns</h3>
-        <ul class="cards">{GRIND.map(g => <li class="card"><b>{g.n}</b><span class="muted">{g.runes}</span><p><T>{g.how}</T></p></li>)}</ul>
-      </section>
     </div>
   )
 }

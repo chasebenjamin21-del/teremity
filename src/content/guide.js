@@ -53,10 +53,10 @@ export const ROUTES = [
     steps: [
       { id: 'r1', t: 'Ride to the Road to the Manor grace', where: 'Road to the Manor', d: 'North Liurnia, on the road up to the manor.' },
       { id: 'r2', t: 'Explore Caria Manor', where: 'Main Caria Manor Gate', d: 'Lots of loot in the gardens and halls. The big ghostly hands crawl fast; kill them from range.' },
-      { id: 'r3', t: 'Beat Royal Knight Loretta', where: 'Manor Upper Level', d: 'Your skull marker, at the top of the manor. Boss card on the Bosses tab. She is weak to lightning and immune to bleed.' },
+      { boss: 'Royal Knight Loretta', id: 'r3', t: 'Beat Royal Knight Loretta', where: 'Manor Upper Level', d: 'Your skull marker, at the top of the manor. Boss card on the Bosses tab. She is weak to lightning and immune to bleed.' },
       { id: 'r4', t: 'Collect the Resurrection painting reward', where: 'Behind Caria Manor', d: 'You already have the painting. Head to the graveyard south-east of the Behind Caria Manor grace: a Larval Tear and a scholar outfit.' },
       { id: 'r5', t: "Visit the Three Sisters and Ranni's Rise", where: "Ranni's Rise", d: "The towers behind the manor. Pidia, a servant on the upper balcony of the manor's chapel, sells one Larval Tear for 3,000 runes. You reach him by dropping down the cliffs from the Three Sisters." },
-      { id: 'r6', t: 'Optional: Village of the Albinaurics', where: 'Village of the Albinaurics', d: 'Omenkiller boss, a Larval Tear in the graveyard, and the hiding pot.' },
+      { boss: 'Omenkiller', id: 'r6', t: 'Optional: Village of the Albinaurics', where: 'Village of the Albinaurics', d: 'Omenkiller boss, a Larval Tear in the graveyard, and the hiding pot.' },
     ],
   },
   {
@@ -66,7 +66,7 @@ export const ROUTES = [
     steps: [
       { id: 'a1', t: 'Ride the Grand Lift of Dectus', where: 'Grand Lift of Dectus', d: 'Your house marker. Both medallion halves are in your key items, so the lift just works. This also starts the Radahn Festival back in Caelid.' },
       { id: 'a2', t: 'Touch the first Altus graces', where: 'Altus Plateau', d: 'The lift lands you near the Altus Plateau grace, and Erdtree-Gazing Hill is close. The Erdtree is huge from here.' },
-      { id: 'a3', t: 'Golden Lineage Evergaol', where: 'Golden Lineage Evergaol', d: 'A stone circle near the lift. Godefroy the Grafted inside drops the Godfrey Icon talisman.' },
+      { boss: 'Godefroy the Grafted', id: 'a3', t: 'Golden Lineage Evergaol', where: 'Golden Lineage Evergaol', d: 'A stone circle near the lift. Godefroy the Grafted inside drops the Godfrey Icon talisman.' },
       { id: 'a4', t: 'Old Altus Tunnel for Somber stones', where: 'Old Altus Tunnel', d: "One or two Somber Smithing Stone [6] for the Godslayer's Greatsword, depending on the source." },
     ],
   },
@@ -75,12 +75,12 @@ export const ROUTES = [
     why: 'The biggest spectacle fight in the game, with lots of NPC helpers. It only starts after you ride the Grand Lift or touch an Altus grace, so do the Altus route first.',
     time: '1 to 2 hours',
     steps: [
-      { id: 'd1', t: 'Optional warm-up: Gael Tunnel', where: 'Gael Tunnel', d: 'Your loot marker. The Moonveil katana and a Magma Wyrm.' },
+      { boss: 'Magma Wyrm', id: 'd1', t: 'Optional warm-up: Gael Tunnel', where: 'Gael Tunnel', d: 'Your loot marker. The Moonveil katana and a Magma Wyrm.' },
       { id: 'd2', t: 'Optional: Sellia Crystal Tunnel', where: 'Sellia Crystal Tunnel', d: "Your loot marker. The Fallingstar Beast here drops a Somber Smithing Stone [6] for the Godslayer, plus a Somberstone Miner's Bell Bearing." },
       { id: 'd7', t: 'Optional: Flame, Grant Me Strength', where: 'Fort Gael North', d: "A buff incantation for the Clawmark Seal that boosts physical and fire damage, the Godslayer's two kinds of damage. It needs 15 Faith, and Teremity has 27. It lies on a body against a wall on the left side of Fort Gael, between two fire chariots. Fight the chariots on foot, one at a time, because their fire knocks you off Torrent. There is also a Rune Arc on a body near the gate." },
       { id: 'd3', t: 'Get into Redmane Castle', where: 'Impassable Greatbridge', d: 'Your house marker. The main gate stays shut during the festival. Use the waygate from the Impassable Greatbridge grace, or the one on the Fort Gael watchtower.' },
       { id: 'd4', t: 'Talk to Jerren in the plaza', where: 'Chamber Outside the Plaza', d: 'He starts the fight. Then go up the stairs opposite him, through the chapel and down the lift. The waygate is at the bottom, next to a Stake of Marika.' },
-      { id: 'd5', t: 'Fight Starscourge Radahn', where: 'Starscourge Radahn', d: 'Use every summon sign on the field. Boss card on the Bosses tab.' },
+      { boss: 'Starscourge Radahn', id: 'd5', t: 'Fight Starscourge Radahn', where: 'Starscourge Radahn', d: 'Use every summon sign on the field. Boss card on the Bosses tab.' },
       { id: 'd6', t: 'Watch the star fall', where: 'Starscourge Radahn', d: 'After he falls, a star crashes into Limgrave and opens Nokron, Eternal City, a new area for next time.' },
     ],
   },

@@ -101,10 +101,10 @@ export function levelVerdict(range, lvl = 103) {
   const m = /(\d+)\D+(\d+)/.exec(range || '')
   if (!m) return null
   const lo = +m[1], hi = +m[2]
-  if (lvl >= hi + 15) return { k: 'easy', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, Teremity outclasses this area.` }
-  if (lvl >= hi) return { k: 'fair', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, Teremity is comfortably ready.` }
-  if (lvl >= lo) return { k: 'fair', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, this is a fair fight.` }
-  return { k: 'hard', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, expect it to hurt. Go carefully.` }
+  if (lvl >= hi + 15) return { k: 'easy', short: 'Easy for Teremity', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, Teremity outclasses this area.` }
+  if (lvl >= hi) return { k: 'fair', short: 'Comfortable for Teremity', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, Teremity is comfortably ready.` }
+  if (lvl >= lo) return { k: 'fair', short: 'A fair fight', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, this is a fair fight.` }
+  return { k: 'hard', short: 'Tough for Teremity', t: `Enemies here suit levels ${lo} to ${hi}. At ${lvl}, expect it to hurt. Go carefully.` }
 }
 
 export function regionName(r) { return REGIONS[r]?.name || r }

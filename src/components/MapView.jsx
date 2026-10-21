@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef } from 'preact/hooks'
 import { world, graces, bosses, loot, markers, places, nearest } from '../lib/world.js'
 import { REGIONS, LANDMARKS } from '../content/regions.js'
 import REAL from '../data/realmap.json'
+import { currentRoute, nextStep, stopOf } from '../lib/plan.js'
 
 const BOUNDS = { 0: [36, 70, 196, 240], 1: [40, 86, 165, 196] }
 const HOME = { 0: [40, 100, 192, 238], 1: [44, 90, 160, 192] }   // the parts of the world we know so far
@@ -176,6 +177,10 @@ export function MapView({ state, here, selected, onSelect, onTapMap, flyRef }) {
     return s
   }, [focus?.id, layer])
   const nc = id => (near && near.has(id) ? ' near' : '')
+  // The plan's stops, numbered in order, so the map and the Plan tab tell the same story.
+  const route = currentRoute(state), now = nextStep(state, route)
+  const stops = L.plan === 0 ? [] : route.steps.map((st, i) => ({ st, i, e: stopOf(st) })).filter(x => x.e && (x.e.l || 0) === layer)
+  const todo = stops.filter(x => !state.steps[x.st.id])
   const unrevealedLabel = s => ['next', 'later'].includes(REGIONS[s.id]?.status)
 
   return (
@@ -240,6 +245,14 @@ export function MapView({ state, here, selected, onSelect, onTapMap, flyRef }) {
             <text class="lbl" y="21">{m.n}</text>
           </g>
         )) : null}
+        {todo.length > 1 && <path d={'M' + todo.map(x => `${x.e.x} ${x.e.y}`).join(' L')} class="plan-line" />}
+        {stops.map(({ st, i, e }) => (
+          <g class={`pin plan-stop ${state.steps[st.id] ? 'done' : ''} ${st === now ? 'now' : ''}`} data-id={e.id} style={at(e)}>
+            {st === now && <circle r="13" class="ps-pulse" />}
+            <circle r="11.5" class="ps-disc" /><text class="ps-num" y="4.2">{i + 1}</text><circle r="17" class="hit" />
+            <text class="lbl" y="26">{st.t.replace(/^Optional: /, '')}</text>
+          </g>
+        ))}
         {here && !here.noMap && (here.l || 0) === layer && (
           <g class={`here ${here.pin ? 'is-pin' : ''}`} style={at(here)} aria-label="We are here">
             {here.approx ? <circle r="34" class="here-area" /> : null}

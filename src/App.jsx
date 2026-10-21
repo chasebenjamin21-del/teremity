@@ -3,13 +3,13 @@ import { useStore, setState, getState, goHere, exportState, importState, resetSt
 import { resolveHere, byId, regionName, nearest, graces } from './lib/world.js'
 import { MapView } from './components/MapView.jsx'
 import { WhereSheet } from './components/WhereSheet.jsx'
-import { HereTab, PlanTab, BossesTab, LootTab, BuildTab, LearnTab, Detail, setViewer } from './components/Panels.jsx'
+import { HereTab, PlanTab, BossesTab, LootTab, BuildTab, LearnTab, MoreTab, MORE_TABS, Detail, setViewer } from './components/Panels.jsx'
 import { useOpenTerm, T, askClaude } from './components/Text.jsx'
 import { Icon } from './components/ui.jsx'
 import { updater } from './lib/updater.js'
 
-const TABS = [['here', 'Here'], ['plan', 'Plan'], ['bosses', 'Bosses'], ['loot', 'Loot'], ['build', 'Teremity'], ['learn', 'Learn']]
-const LAYERS = [['real', 'Real game map'], ['markers', 'Your markers'], ['graces', 'Graces'], ['bosses', 'Bosses'], ['loot', 'Loot'], ['places', 'Places']]
+const TABS = [['plan', 'Plan'], ['here', 'Around us'], ['more', 'More']]
+const LAYERS = [['real', 'Real game map'], ['plan', 'Plan steps'], ['markers', 'Your markers'], ['graces', 'Graces'], ['bosses', 'Bosses'], ['loot', 'Loot'], ['places', 'Places']]
 
 export function App() {
   const state = useStore()
@@ -52,19 +52,29 @@ export function App() {
     }
   }
   const onSelect = useCallback(id => setSelected(id), [])
+  // Fly the map to something without opening its card, so the plan stays in view.
+  const showOnMap = useCallback(id => {
+    const e = byId.get(id)
+    if (!e) return
+    const lay = e.l || 0
+    if (lay !== getState().under) setState({ under: lay })
+    setTimeout(() => fly.current?.flyTo(e.x, e.y, 0.06), lay !== getState().under ? 60 : 0)
+  }, [])
   // Tap anywhere on the map: that's where we are. A tap on (or right by) a grace snaps to the grace.
   const onTapMap = useCallback((p, upp) => {
     const layer = getState().under ? 1 : 0
     const snap = nearest(graces, { ...p, l: layer }, { max: Math.max(0.9, 20 * upp), limit: 1, layer })[0]
     const id = snap ? snap.e.id : `pt:${p.x.toFixed(2)},${p.y.toFixed(2)},${layer}`
     setSelected(null)
-    const undo = goHere(id)
+    const stay = getState().tab === 'plan'
+    const undo = goHere(id, stay)
     if (!getState().pinned) setState({ pinned: 1 })
-    setToast({ n: resolveHere(id)?.n, undo })
+    setToast({ n: resolveHere(id)?.n, undo, stay })
   }, [])
 
   const tab = state.tab
-  const Tab = { here: HereTab, plan: PlanTab, bosses: BossesTab, loot: LootTab, build: BuildTab, learn: LearnTab }[tab] || HereTab
+  const Tab = { here: HereTab, plan: PlanTab, more: MoreTab, bosses: BossesTab, loot: LootTab, build: BuildTab, learn: LearnTab }[tab] || PlanTab
+  const inMore = MORE_TABS.includes(tab)
 
   return (
     <div class={`app ${selected ? 'has-detail' : ''}`}>
@@ -106,6 +116,7 @@ export function App() {
           {toast ? (
             <div class="map-toast map-ui" role="status">
               <span><b>We're here:</b> {toast.n}</span>
+              {toast.stay && <button type="button" class="btn small primary" onClick={() => { setState({ tab: 'here' }); setToast(null) }}>What's around</button>}
               <button type="button" class="btn small" onClick={() => { toast.undo(); setToast(null) }}>Undo</button>
             </div>
           ) : !state.pinned ? (
@@ -118,11 +129,12 @@ export function App() {
           {selected && <Detail id={selected} state={state} here={here} onClose={() => setSelected(null)} onFly={flyToId} />}
           <nav class="tabs" role="tablist" aria-label="Sections">
             {TABS.map(([id, label]) => (
-              <button type="button" role="tab" aria-selected={tab === id ? 'true' : 'false'} class={tab === id ? 'on' : ''} onClick={() => { setState({ tab: id }); setSelected(null) }}>{label}</button>
+              <button type="button" role="tab" aria-selected={tab === id || (id === 'more' && inMore) ? 'true' : 'false'} class={tab === id || (id === 'more' && inMore) ? 'on' : ''} onClick={() => { setState({ tab: id }); setSelected(null) }}>{label}</button>
             ))}
           </nav>
           <div class="panel-scroll" ref={scroller}>
-            <Tab state={state} here={here} onWhere={() => setWhere(true)} onFly={flyToId} />
+            {inMore && <button type="button" class="back-link" onClick={() => setState({ tab: 'more' })}><Icon name="back" /> Back to More</button>}
+            <Tab state={state} here={here} onWhere={() => setWhere(true)} onFly={flyToId} onShow={showOnMap} />
           </div>
         </section>
       </main>
