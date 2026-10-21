@@ -9,6 +9,7 @@ import { setState, toggle, goHere } from '../lib/store.js'
 import { T, Spoiler, askClaude, showTerm } from './Text.jsx'
 import { Check, Dir, Icon } from './ui.jsx'
 import { MarkerGlyph } from './MapView.jsx'
+import { useShots, addShots, removeShot } from '../lib/shots.js'
 
 export const LOOT_CATS = [
   ['seed', 'Golden Seeds', 'Each flask upgrade adds a charge, and the seed cost rises as you go. The next one needs 3, and you hold 2.'],
@@ -116,6 +117,7 @@ export function Detail({ id, state, here, onClose, onFly }) {
       </>}
       {k === 'place' && <p class="muted">{(e.t || '').replace(/_/g, ' ')}</p>}
       <SeeIt e={e} k={k} />
+      <Shots eid={e.id} name={e.n} />
       <div class="row-actions">
         <button type="button" class="btn" onClick={() => askClaude(`Tell us about ${e.n} and what we should know before going there.`, { where: here?.n })}><Icon name="chat" /> Ask Claude about this</button>
       </div>
@@ -160,6 +162,25 @@ function NearbyLists({ p, state, onFly, compact }) {
       {ls.length > 0 && <section><h3>Loot nearby</h3><ul>{ls.map(({ e }) => <Row e={e} sub={LOOT_CATS.find(c => c[0] === catOf(e))?.[1]} />)}</ul></section>}
       {!compact && gs.length > 0 && <section><h3>Closest graces</h3><ul>{gs.map(({ e }) => <Row e={e} />)}</ul></section>}
     </div>
+  )
+}
+
+export function Shots({ eid, label = 'Our screenshots', name }) {
+  const list = useShots(eid)
+  const [busy, setBusy] = useState(false)
+  return (
+    <section class="shots">
+      <h3>{label}</h3>
+      {list.length > 0 && <div class="captures">{list.map(s => (
+        <figure class="shot"><button type="button" class="cap" onClick={() => openViewer(s.url, name || 'Our screenshot')}><img src={s.url} alt={name ? `Our screenshot of ${name}` : 'Our screenshot'} /></button>
+          <button type="button" class="link small" onClick={() => removeShot(s.id)}>Remove</button></figure>
+      ))}</div>}
+      <label class="btn add-shot">
+        <input type="file" accept="image/*" multiple onChange={async e => { const f = [...e.currentTarget.files]; e.currentTarget.value = ''; if (!f.length) return; setBusy(true); try { await addShots(eid, f) } finally { setBusy(false) } }} />
+        {busy ? 'Saving…' : list.length ? 'Add another screenshot' : 'Add a screenshot'}
+      </label>
+      {list.length === 0 && <p class="muted small">On the Switch 2: Album, pick a screenshot, Send to Smartphone, then save it to the iPad and add it here.</p>}
+    </section>
   )
 }
 
@@ -243,6 +264,7 @@ export function HereTab({ state, here, onWhere, onFly }) {
         </section>
       )}
       <QuickCheck here={here} state={state} onFly={onFly} />
+      {!here.approx && <Shots eid={here.id} name={here.n} label="Our screenshots of this place" />}
       {secret && <aside class="secret"><h3>Something to tell Chase</h3><p><T>{secret}</T></p></aside>}
       <NearbyLists p={here} state={state} onFly={onFly} />
       <div class="row-actions">

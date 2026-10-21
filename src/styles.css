@@ -371,3 +371,8 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 .viewer { position: fixed; inset: 0; z-index: 40; background: rgba(5, 6, 9, .92); display: grid; place-items: center; padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px); cursor: zoom-out; }
 .viewer img { max-width: 100%; max-height: calc(100% - 40px); border-radius: 10px; }
 .viewer p { color: #d9d0bd; font-size: 15px; margin-top: 8px; }
+.shots { display: grid; gap: 8px; }
+.add-shot { position: relative; justify-self: start; cursor: pointer; }
+.add-shot input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.shot { justify-items: start; }
+.link.small { font-size: 14px; padding: 0; }
