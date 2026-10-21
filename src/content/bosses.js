@@ -108,9 +108,9 @@ export const BOSS_TIPS = {
     drops: "A Dragon Heart and 38,000 runes. Beating it lets you buy Ekzykes's Decay at the Cathedral of Dragon Communion.",
   },
   'Elder Dragon Greyoll': {
-    level: 'easy', weak: 'Pierce damage. She resists bleed and other status effects.', summon: 'Not needed.',
-    tips: ['She barely fights back. Stand by her head and keep hitting.', 'Five small dragons lie in front of her; they do not fight back.', 'It takes a while. Put on the Gold Scarab first for extra runes.'],
-    drops: 'About 50,000 runes and five Dragon Hearts. The best one-time rune haul around.',
+    level: 'easy', weak: 'Pierce damage. Bleed works well too, because each bleed takes a share of her total health.', summon: 'Not needed.',
+    tips: ['She cannot attack you. Go around to her tail and keep hitting it.', 'Stay away from her head. If she roars, her five young dragons wake up and come after you.', 'It takes a while. Put on the Gold Scarab first for extra runes.'],
+    drops: 'About 50,000 runes and five Dragon Hearts. Her five young dragons die with her and add roughly 17,000 more runes.',
   },
   'Godefroy the Grafted': {
     level: 'easy', weak: 'Nothing special.', summon: NO_ASH,

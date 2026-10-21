@@ -17,13 +17,15 @@ export const TEREMITY = {
 }
 
 export const BUILD_ADVICE = [
-  { h: 'Vigor first', p: 'Health is the best defense in the game. Take Vigor from 35 to 42 with the next 7 levels, then on to 50 over time.' },
+  { h: 'Vigor first', p: 'Health is the best defense in the game. Each point of Vigor adds the most health up to 40, so take it from 35 to 40 with the next five levels. Past 40 each point adds less, but it is still worth it up to 60.' },
   { h: 'Then Faith', p: 'Faith powers both the Godslayer\'s fire and every incantation from the Clawmark Seal. Take it from 27 to 40.' },
   { h: 'Keep Dexterity', p: 'The Godslayer\'s Greatsword needs 22 Dexterity and gets most of its physical damage from it, so Dex 25 is doing real work.' },
-  { h: 'Respec is optional', p: 'Intelligence 25 only matters if you two keep using the staff and sorceries. If you drop sorcery, one Larval Tear at Rennala moves those points into Vigor and Faith. If you still like casting, keep it.' },
+  { h: 'Respec is optional', p: 'Intelligence 25 only matters if you two keep using the staff and sorceries. If you drop sorcery, one Larval Tear at Rennala moves those points into Vigor and Faith. If you still like casting, keep it. Keep at least 23 if you want to try the Moonveil katana from Gael Tunnel.' },
   { h: 'Upgrade the Godslayer', p: 'It is at +5. The next step needs a Somber Smithing Stone [6]. The closest one is in Caelid: the Fallingstar Beast boss in Sellia Crystal Tunnel drops one, plus a Somberstone Miner\'s Bell Bearing. More are up on the Altus Plateau and in Nokron.' },
   { h: 'Use the Great Rune', p: "Equip Godrick's Great Rune at a grace and pop a Rune Arc before a tough boss: +5 to every stat until you die." },
-  { h: 'Leveling', p: 'Level 104 costs 65,681 runes, and you hold 35,211. Killing Elder Dragon Greyoll in Dragonbarrow (about 50,000 runes) gets you there in one go.' },
+  { h: 'Leveling', p: 'Level 104 costs 65,681 runes, and you hold 35,211. Elder Dragon Greyoll in Dragonbarrow gives about 50,000, and her five young dragons add about 17,000 more when they die with her. That pays for level 104 with plenty left over.' },
+  { h: 'Two buffs that stack', p: "Flame, Grant Me Strength (15 Faith) raises physical and fire attack, which are exactly the Godslayer's two kinds of damage. Golden Vow (25 Faith) raises attack and defense. Teremity has 27 Faith, so both work, and they stack because they are different kinds of buff. Cast both right before a boss, then drink the Physick." },
+  { h: 'Watch the weight', p: 'Teremity carries 42.2 of 64.1, about 66 percent. At 70 percent the roll turns slow and heavy, so anything that adds more than about 2.5 weight, like a heavier chest piece or a second big weapon, needs a little Endurance first.' },
 ]
 
 export const TALISMAN_SETS = [
@@ -75,6 +77,7 @@ export const ROUTES = [
     steps: [
       { id: 'd1', t: 'Optional warm-up: Gael Tunnel', where: 'Gael Tunnel', d: 'Your loot marker. The Moonveil katana and a Magma Wyrm.' },
       { id: 'd2', t: 'Optional: Sellia Crystal Tunnel', where: 'Sellia Crystal Tunnel', d: "Your loot marker. The Fallingstar Beast here drops a Somber Smithing Stone [6] for the Godslayer, plus a Somberstone Miner's Bell Bearing." },
+      { id: 'd7', t: 'Optional: Flame, Grant Me Strength', where: 'Fort Gael North', d: "A buff incantation for the Clawmark Seal that boosts physical and fire damage, the Godslayer's two kinds of damage. It needs 15 Faith, and Teremity has 27. It lies on a body against a wall on the left side of Fort Gael, between two fire chariots. Fight the chariots on foot, one at a time, because their fire knocks you off Torrent. There is also a Rune Arc on a body near the gate." },
       { id: 'd3', t: 'Get into Redmane Castle', where: 'Impassable Greatbridge', d: 'Your house marker. The main gate stays shut during the festival. Use the waygate from the Impassable Greatbridge grace, or the one on the Fort Gael watchtower.' },
       { id: 'd4', t: 'Talk to Jerren in the plaza', where: 'Chamber Outside the Plaza', d: 'He starts the fight. Then go up the stairs opposite him, through the chapel and down the lift. The waygate is at the bottom, next to a Stake of Marika.' },
       { id: 'd5', t: 'Fight Starscourge Radahn', where: 'Starscourge Radahn', d: 'Use every summon sign on the field. Boss card on the Bosses tab.' },
@@ -116,6 +119,7 @@ export const SECRETS = {
     'Godefroy the Grafted, in an evergaol, drops the Godfrey Icon: stronger charged spells and skills.',
     'Windmill Village looks peaceful. It is not.',
     'Old Altus Tunnel has one or two Somber Smithing Stone [6] for the Godslayer.',
+    'Golden Vow, a strong buff incantation that needs 25 Faith (Teremity has 27), lies on a body in the Corpse-Stench Shack, a short ride north-west of the Bridge of Iniquity grace at the edge of Mt. Gelmir.',
   ],
   siofra: [
     'Nokron, Eternal City only opens after Radahn falls.',
@@ -138,10 +142,21 @@ export const VIDEO_TIPS = [
   { from: "Rusty: A Beginner's Guide (Patch 1.17)", tip: 'Blocking light attacks with a shield and answering with a guard counter can hit as hard as a charged heavy attack.' },
   { from: "Rusty: A Beginner's Guide (Patch 1.17)", tip: 'Lhutel the Headless, a spirit ash from Tombsward Catacombs, is one of the few summons tough enough to last a whole boss fight.' },
   { from: "Rusty: A Beginner's Guide (Patch 1.17)", tip: "Radagon's Soreseal adds Strength, which helps you meet a heavy weapon's requirement. Two-handing counts your Strength as 1.5 times higher too." },
+  { from: 'Hawk Live Gaming: Get OP Fast', tip: 'Buffs come in different kinds, and one of each kind stacks. Flame, Grant Me Strength and Golden Vow are different kinds, so cast both before a boss.' },
+  { from: 'Hawk Live Gaming: Get OP Fast', tip: 'When you die, your runes stay where you fell, and you get one chance to pick them up. Spend a big pile before a risky fight.' },
+  { from: 'Hawk Live Gaming: Get OP Fast', tip: 'Roll toward or past an attack, not straight back from it. A backward roll often ends just as the swing arrives.' },
+  { from: 'Hawk Live Gaming: Get OP Fast', tip: 'After a boss finishes a combo, hit once or twice, then back off. Greed is what gets you hit.' },
+  { from: 'Hawk Live Gaming: Get OP Fast', tip: 'Always keep enough stamina for one roll.' },
+  { from: 'Hawk Live Gaming: Get OP Fast', tip: 'Every boss repeats its attacks. Each try teaches you a few, so a loss is never wasted.' },
+  { from: 'Hawk Live Gaming: Get OP Fast', tip: 'Ten tries with no progress? Leave, get a few levels or an upgrade, and come back.' },
+  { from: 'RageGamingVideos: 2026 Starter Guide', tip: 'Vigor adds the most health per point up to 40, then less up to 60. Teremity is at 35, so the next five points are the best value.' },
+  { from: 'RageGamingVideos: 2026 Starter Guide', tip: 'Keep your gear under 70 percent of your weight limit so you roll normally. Teremity is at about 66 percent.' },
+  { from: 'RageGamingVideos: 2026 Starter Guide', tip: 'Flame, Grant Me Strength lies at Fort Gael in Caelid. It is on the Radahn route on the Plan tab.' },
+  { from: 'Youwy: Top 25 Weapons', tip: 'The Moonveil katana from Gael Tunnel needs 12 Strength, 18 Dexterity and 23 Intelligence, which Teremity already has. It builds bleed, its skill fires a slash of light, and it upgrades with Somber stones, the same stones the Godslayer needs.' },
 ]
 
 export const GRIND = [
-  { id: 'g1', n: 'Elder Dragon Greyoll', where: 'Fort Faroth', runes: 'About 50,000, once', how: 'She lies right beside Fort Faroth in Dragonbarrow; ride east from Dragonbarrow West. She barely fights back, so keep hitting her head. She resists bleed, so use your strongest weapon and wear the Gold Scarab.' },
+  { id: 'g1', n: 'Elder Dragon Greyoll', where: 'Fort Faroth', runes: 'About 67,000 in all, once', how: 'She lies just west of Fort Faroth in Dragonbarrow; ride east from Dragonbarrow West. Go around to her tail and keep hitting it, because she cannot fight back. Stay away from her head: her roar wakes her five young dragons. Bleed works well on her, so the Occult Hookclaws are a good pick. Wear the Gold Scarab.' },
   { id: 'g2', n: 'Night bosses', where: 'Any grace', runes: 'Several thousand each, once', how: 'Pass Time to night at a grace, then hunt the Night\'s Cavalry riders and Bell Bearing Hunters you have not beaten.' },
   { id: 'g3', n: 'Gold Scarab on', where: 'Anywhere', runes: '+20% from every kill', how: 'Wear the Gold Scarab talisman while exploring, and swap it out before bosses.' },
   { id: 'g4', n: 'Golden Runes in the pouch', where: 'Your inventory', runes: 'Whatever you are holding', how: 'Golden Runes are consumables that turn into runes. Use them before leveling.' },
