@@ -59,6 +59,7 @@ export function App() {
     const id = snap ? snap.e.id : `pt:${p.x.toFixed(2)},${p.y.toFixed(2)},${layer}`
     setSelected(null)
     const undo = goHere(id)
+    if (!getState().pinned) setState({ pinned: 1 })
     setToast({ n: resolveHere(id)?.n, undo })
   }, [])
 
