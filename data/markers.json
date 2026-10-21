@@ -1,0 +1,194 @@
+[
+ {
+  "id": "m1",
+  "x": 118.18,
+  "y": 189.46,
+  "symbol": "flag",
+  "title": "Mistwood Ruins",
+  "note": "Ruins in the Mistwood. A Runebear guards a cellar, and Blaidd's howl starts his quest here."
+ },
+ {
+  "id": "m2",
+  "x": 96.2,
+  "y": 193.85,
+  "symbol": "house",
+  "title": "Coastal Cave",
+  "note": "Two Demi-Human Chiefs at the end, and Boc the Seamster is trapped near the entrance."
+ },
+ {
+  "id": "m3",
+  "x": 104.92,
+  "y": 195.92,
+  "symbol": "diamond",
+  "title": "Incantation Scarab",
+  "note": "The reward for the Homing Instinct painting: a head piece that boosts incantations. Stand where the painting shows, north-west of Seaside Ruins, and a ghost appears with it."
+ },
+ {
+  "id": "m4",
+  "x": 153.43,
+  "y": 195.43,
+  "symbol": "house",
+  "title": "Redmane Castle",
+  "note": "Radahn's castle. During the Radahn Festival this is where the big fight starts."
+ },
+ {
+  "id": "m5",
+  "x": 114.13,
+  "y": 199.94,
+  "symbol": "skull",
+  "title": "Runebear disguised as a Wandering Noble",
+  "note": "Kill the lone sword-holding noble east of Agheel Lake South. It turns into a Runebear and drops a Larval Tear."
+ },
+ {
+  "id": "m6",
+  "x": 113.03,
+  "y": 201.9,
+  "symbol": "skull",
+  "title": "Bloodhound Knight Darriwil",
+  "note": "Boss of the Forlorn Hound Evergaol. Drops the Bloodhound's Fang curved greatsword."
+ },
+ {
+  "id": "m7",
+  "x": 72.5,
+  "y": 105.42,
+  "symbol": "diamond",
+  "title": "Ruin-Strewn Precipice",
+  "note": "A Golden Seed, Somber Smithing Stones and the Magma Wyrm Makar boss along the cliffs."
+ },
+ {
+  "id": "m8",
+  "x": 77.05,
+  "y": 107.73,
+  "symbol": "house",
+  "title": "Grand Lift of Dectus",
+  "note": "The big lift up to the Altus Plateau. Both Dectus Medallion halves make it work."
+ },
+ {
+  "id": "m9",
+  "x": 147.53,
+  "y": 178.6,
+  "symbol": "house",
+  "title": "Sellia, Town of Sorcery",
+  "note": "Light the three braziers to open the barrier and reach its loot, including Night Comet."
+ },
+ {
+  "id": "m10",
+  "x": 55.56,
+  "y": 110.78,
+  "symbol": "house",
+  "title": "Caria Manor",
+  "note": "Ranni's family manor. Royal Knight Loretta waits at the top, and three areas full of loot open behind it."
+ },
+ {
+  "id": "m11",
+  "x": 80.98,
+  "y": 145.18,
+  "symbol": "skull",
+  "title": "Tibia Mariner",
+  "note": "A ghostly boatman boss on the east Liurnia shore near the Carian Study Hall."
+ },
+ {
+  "id": "m12",
+  "x": 64.52,
+  "y": 124.69,
+  "symbol": "turtle",
+  "title": "Walking Mausoleum (central Liurnia)",
+  "note": "A giant stone tomb on legs. Hit its feet, climb up, and use a Remembrance to duplicate a boss item."
+ },
+ {
+  "id": "m13",
+  "x": 127.76,
+  "y": 174.21,
+  "symbol": "diamond",
+  "title": "Gael Tunnel",
+  "note": "The Moonveil katana is inside, guarded by a Magma Wyrm."
+ },
+ {
+  "id": "m14",
+  "x": 144.59,
+  "y": 172.62,
+  "symbol": "diamond",
+  "title": "Sellia Crystal Tunnel",
+  "note": "A Somberstone Miner's Bell Bearing [1] and the Faithful's Canvas Talisman."
+ },
+ {
+  "id": "m15",
+  "x": 112.66,
+  "y": 182.14,
+  "symbol": "diamond",
+  "title": "Homing Instinct Painting",
+  "note": "The painting in Limgrave's Artist's Shack. It points to the Incantation Scarab near the Dragon-Burnt Ruins."
+ },
+ {
+  "id": "m16",
+  "x": 110.57,
+  "y": 213.48,
+  "symbol": "flag",
+  "title": "Callu Baptismal Church",
+  "note": "A Sacred Tear in the church, next to the Ailing Village."
+ },
+ {
+  "id": "m17",
+  "x": 56.42,
+  "y": 103.83,
+  "symbol": "skull",
+  "title": "Royal Knight Loretta",
+  "note": "Caria Manor's final boss. Drops Loretta's Greatbow and unlocks Ranni's Rise and the Three Sisters."
+ },
+ {
+  "id": "m18",
+  "x": 45.61,
+  "y": 149.57,
+  "symbol": "skull",
+  "title": "Erdtree Avatar (Liurnia southwest)",
+  "note": "A giant root guardian under the Minor Erdtree, plus a Cerulean Crystal Tear."
+ },
+ {
+  "id": "m19",
+  "x": 52.12,
+  "y": 159.57,
+  "symbol": "skull",
+  "title": "Omenkiller",
+  "note": "Boss of the Village of the Albinaurics. There's a Larval Tear in the village graveyard too."
+ },
+ {
+  "id": "m20",
+  "x": 44.75,
+  "y": 167.01,
+  "symbol": "house",
+  "title": "Chelona's Rise",
+  "note": "A tower near the Moonlight Altar, in Ranni's quest territory."
+ },
+ {
+  "id": "m21",
+  "x": 99.89,
+  "y": 214.09,
+  "symbol": "skull",
+  "title": "Miranda the Blighted Bloom",
+  "note": "A giant flower boss in Tombsward Cave. Drops a cookbook and an amber medallion."
+ },
+ {
+  "id": "m22",
+  "x": 136.73,
+  "y": 164.94,
+  "symbol": "flag",
+  "title": "Bell Bearing Hunter (Dragonbarrow)",
+  "note": "At night this shack is guarded by a Bell Bearing Hunter who drops a merchant's bell bearing."
+ },
+ {
+  "id": "m23",
+  "x": 59.85,
+  "y": 149.81,
+  "symbol": "skull",
+  "title": "Grafted Scion disguised as a Giant Crayfish",
+  "note": "The patrolling crayfish south of Fallen Ruins of the Lake. It drops a Larval Tear."
+ },
+ {
+  "id": "m24",
+  "x": 104.92,
+  "y": 213.85,
+  "symbol": "turtle",
+  "title": "Walking Mausoleum (Weeping Peninsula)",
+  "note": "This one walks around the western Weeping Peninsula."
+ }
+]
