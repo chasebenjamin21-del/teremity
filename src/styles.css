@@ -376,3 +376,4 @@ textarea, .filter { width: 100%; font: inherit; color: var(--text); background: 
 .add-shot input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
 .shot { justify-items: start; }
 .link.small { font-size: 14px; padding: 0; }
+.update-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); z-index: 35; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--gold); border-radius: 16px; box-shadow: var(--shadow); padding: 10px 14px; max-width: calc(100% - 32px); }

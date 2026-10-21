@@ -7,7 +7,7 @@ import '@fontsource/alegreya-sans/500.css'
 import '@fontsource/alegreya-sans/700.css'
 import './styles.css'
 import { App } from './App.jsx'
-import { registerSW } from 'virtual:pwa-register'
+import { startUpdater } from './lib/updater.js'
 
-registerSW({ immediate: true })
+startUpdater()
 render(<App />, document.getElementById('app'))

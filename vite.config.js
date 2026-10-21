@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     preact(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['icon.svg', 'apple-touch-icon.png', '.nojekyll'],
       manifest: {
         name: 'Teremity',

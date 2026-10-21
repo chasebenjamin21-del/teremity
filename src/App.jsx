@@ -6,6 +6,7 @@ import { WhereSheet } from './components/WhereSheet.jsx'
 import { HereTab, PlanTab, BossesTab, LootTab, BuildTab, LearnTab, Detail, setViewer } from './components/Panels.jsx'
 import { useOpenTerm, T, askClaude } from './components/Text.jsx'
 import { Icon } from './components/ui.jsx'
+import { updater } from './lib/updater.js'
 
 const TABS = [['here', 'Here'], ['plan', 'Plan'], ['bosses', 'Bosses'], ['loot', 'Loot'], ['build', 'Teremity'], ['learn', 'Learn']]
 const LAYERS = [['markers', 'Your markers'], ['graces', 'Graces'], ['bosses', 'Bosses'], ['loot', 'Loot'], ['places', 'Places']]
@@ -20,6 +21,8 @@ export function App() {
   const fly = useRef(null)
   const [term, closeTerm] = useOpenTerm()
   const [viewer, setV] = useState(null)
+  const [updateReady, setUpdateReady] = useState(updater.ready)
+  useEffect(() => { updater.listeners.add(setUpdateReady); return () => updater.listeners.delete(setUpdateReady) }, [])
   useEffect(() => { setViewer(setV) }, [])
 
   useEffect(() => {
@@ -110,6 +113,13 @@ export function App() {
         </div>
       )}
       {settings && <Settings state={state} onClose={() => setSettings(false)} />}
+      {updateReady && (
+        <div class="update-bar" role="status">
+          <span>A newer version of Teremity is ready.</span>
+          <button type="button" class="btn small primary" onClick={() => updater.update(true)}>Refresh now</button>
+          <button type="button" class="btn small" onClick={() => setUpdateReady(false)}>Later</button>
+        </div>
+      )}
       {viewer && (
         <div class="viewer" role="dialog" aria-modal="true" aria-label={viewer.cap} onClick={() => setV(null)}>
           <img src={viewer.src} alt={viewer.cap} />
